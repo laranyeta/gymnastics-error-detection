@@ -5,20 +5,26 @@ import json
 import cv2
 
 def read_video(path):
-    count = 0
+    frames = []
     video = cv2.VideoCapture(path)
     while True:
         ret, frame = video.read()
-        count += 1
         if not ret:
             break
-        #test: every 20 frames show
-        if count % 10 == 0:
-            cv2.imshow("frame", frame)
-            cv2.waitKey(0)
+        h, w, _ = frame.shape
+        frame = cv2.resize(frame, (w*2, h*2), cv2.INTER_LINEAR)
+        frames.append(frame)
     video.release()
     cv2.destroyAllWindows()
-        
+    return frames
+
+def save_video(frames, path):
+    h,w,_ = frames[0].shape
+    codec = cv2.VideoWriter_fourcc(*"XVID")
+    output = cv2.VideoWriter(f"{path}/output_front_aerial.avi", codec, fps=30.0, frameSize=(w,h))
+    for frame in frames:
+        output.write(frame)
+    output.release()
 
 def filter_annotations(path):
     #filtering for not null segments annotations

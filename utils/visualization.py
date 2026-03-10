@@ -4,6 +4,8 @@
 ###########################################################
 import cv2
 import mediapipe as mp
+import numpy as np
+import pandas as pd
 
 def extract_pose(frame):
     pose = mp.solutions.pose
@@ -11,12 +13,25 @@ def extract_pose(frame):
     pose_estimation = pose.Pose(static_image_mode=True,
                         model_complexity=2,
                         enable_segmentation=False,
-                        min_detection_confidence=0.5,
-                        min_tracking_confidence=0.3)
+                        min_detection_confidence=0.8,
+                        min_tracking_confidence=0.6)
+    h, w, _ = frame.shape
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #convert to rgb to process
     results = pose_estimation.process(frame)
+
+    coords = {}
+    if results.pose_landmarks:
+        for idx, landmark in enumerate(results.pose_landmarks.landmark):
+            if landmark.visibility > 0.5: #es veu
+                coords[f"x_{idx}"] = w*landmark.x
+                coords[f"y_{idx}"] = h*landmark.y
+            else:
+                coords[f"x_{idx}"] = np.nan
+                coords[f"y_{idx}"] = np.nan
+
     return results, connections
 
+### fer-ho amb opencv
 def draw_skeleton(frame, results, connections):
     #bone mapping
     body_parts = {
@@ -42,3 +57,4 @@ def draw_skeleton(frame, results, connections):
             connections,
             landmark_drawing_spec=style.get_default_pose_landmarks_style())
     return frame
+

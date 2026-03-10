@@ -1,7 +1,7 @@
 #### DATA.PY (WIP) ##########################
 ## involves data processing and treatment
 #############################################
-import json
+import numpy as np
 import cv2
 
 def read_video(path):
@@ -12,7 +12,7 @@ def read_video(path):
         if not ret:
             break
         h, w, _ = frame.shape
-        frame = cv2.resize(frame, (w*2, h*2), cv2.INTER_LINEAR)
+        frame = cv2.resize(frame, (int(w*2), int(h*2)), cv2.INTER_LINEAR)
         frames.append(frame)
     video.release()
     cv2.destroyAllWindows()
@@ -21,51 +21,74 @@ def read_video(path):
 def save_video(frames, path):
     h,w,_ = frames[0].shape
     codec = cv2.VideoWriter_fourcc(*"XVID")
-    output = cv2.VideoWriter(f"{path}/output_front_aerial.avi", codec, fps=30.0, frameSize=(w,h))
+    output = cv2.VideoWriter(path, codec, fps=30.0, frameSize=(w,h))
     for frame in frames:
         output.write(frame)
     output.release()
 
-def filter_annotations(path):
-    #filtering for not null segments annotations
-    filtered_file = "dataset/filtered_annotations.json"
-    events = {
-        1: "dataset/vault.json",
-        2: "dataset/floorexercise.json",
-        3: "dataset/balancebeam.json",
-        4: "dataset/unevenbars.json"
+def process_nans(frame, results):
+    h, w, _ = frame.shape
+    coords = {}
+    #nans conversion for later processing
+    if results.pose_landmarks:
+        for idx, landmark in enumerate(results.pose_landmarks.landmark):
+            if landmark.visibility > 0.5:
+                coords[f"x_{idx}"] = w*landmark.x
+                coords[f"y_{idx}"] = h*landmark.y
+            else:
+                coords[f"x_{idx}"] = np.nan
+                coords[f"y_{idx}"] = np.nan
+    #TO DO: processing remaining!!
+    return results
+
+def get_point(idx, results, width, height): #returns point given a landmark
+    return [int(width*results.pose_landmarks.landmark[idx].x), 
+            int(height*results.pose_landmarks.landmark[idx].y)]
+
+def create_bones(results,w,h):
+    bones = {}
+    if not results.pose_landmarks:
+        return bones #None
+    
+    bodyparts_idx = {"shoulder": 11,"elbow": 13,"wrist": 15,"hip": 23,"knee": 25,"ankle": 27,"tiptoe": 31}
+    points = {}
+    for part, idx in bodyparts_idx.items():
+        points[f"{part}_left"] = get_point(idx, results, width=w, height=h)
+        points[f"{part}_right"] = get_point(idx+1, results, width=w, height=h) #mediapipe structure pattern
+
+    bones = {
+        "torso": [points["shoulder_right"], points["shoulder_left"]],
+        "shoulder_left": [points["shoulder_left"], points["elbow_left"]],
+        "shoulder_right": [points["shoulder_right"], points["elbow_right"]],
+        "elbow_left": [points["elbow_left"], points["wrist_left"]],
+        "elbow_right": [points["elbow_right"], points["wrist_right"]],
+        "pelvis": [points["hip_right"], points["hip_left"]],
+        "hips_left": [points["hip_left"], points["knee_left"]],
+        "hips_right": [points["hip_right"], points["knee_right"]],
+        "knee_left": [points["knee_left"], points["ankle_left"]],
+        "knee_right": [points["knee_right"], points["ankle_right"]],
+        "toe_left": [points["ankle_left"], points["tiptoe_left"]],
+        "toe_right": [points["ankle_right"], points["tiptoe_right"]]
     }
+    return bones
 
-    with open(path, "r") as input:
-        data = json.load(input)
-
-    filtered = {}
-    for video_id, routine in data.items():
-        valid_routines = {}
-        for routine_id, info in routine.items():
-            if info.get("segments") is not None: #segment: "null"
-                valid_routines[routine_id] = info
-        
-        if valid_routines:
-            filtered[video_id] = valid_routines
-
-    with open(filtered_file, "w") as output:
-        json.dump(filtered, output, indent=4)
-
-    #file event separation (vault, floor exercise, balance beam, uneven bars)
-    with open(filtered_file, "r") as input:
-        filtered_data = json.load(input)
-
-    filtered_events = {1: {}, 2: {}, 3: {}, 4: {}}
-    for video_id, routine in filtered_data.items():
-        for routine_id, info in routine.items():
-            event_id = info.get("event")
-
-            if event_id in filtered_events:
-                if video_id not in filtered_events[event_id]:
-                    filtered_events[event_id][video_id] = {}
-                filtered_events[event_id][video_id][routine_id] = info
-        
-    for event_id, filename in events.items():
-        with open(filename, "w") as output:
-            json.dump(filtered_events[event_id], output, indent=4)
+def create_joints(bones):
+    joints = {}
+    if bones:
+        joints = {
+            "left": {
+                "shoulder": [bones["torso"], bones["shoulder_left"]],
+                "elbow": [bones["shoulder_left"], bones["elbow_left"]],
+                "hips": [bones["pelvis"], bones["hips_left"]],
+                "knee": [bones["hips_left"], bones["knee_left"]],
+                "toe": [bones["knee_left"], bones["toe_left"]]
+            },
+            "right": {
+                "shoulder": [bones["torso"], bones["shoulder_right"]],
+                "elbow": [bones["shoulder_right"], bones["elbow_right"]],
+                "hips": [bones["pelvis"], bones["hips_right"]],
+                "knee": [bones["hips_right"], bones["knee_right"]],
+                "toe": [bones["knee_right"], bones["toe_right"]]
+            }
+        }
+    return joints

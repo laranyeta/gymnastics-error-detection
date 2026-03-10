@@ -4,7 +4,7 @@ import os
 from utils.data import read_video, save_video, filter_annotations
 from utils.visualization import extract_pose, draw_skeleton
 
-input_path = "dataset/video_test/tuck_backflip.mp4"
+input_path = "dataset/video_test/aerial_doublebackflip.mp4"
 filename = input_path[19:-4]
 output_path = "outputs"
 filter_annotations("dataset/original/finegym_v1.1.json")

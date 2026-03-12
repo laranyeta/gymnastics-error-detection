@@ -13,7 +13,7 @@ def extract_pose(frame):
                         model_complexity=2,
                         enable_segmentation=False,
                         min_detection_confidence=0.8,
-                        min_tracking_confidence=0.6)
+                        min_tracking_confidence=0.8)
     h, w, _ = frame.shape
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #convert to rgb to process
     results = pose_estimation.process(frame)
@@ -44,16 +44,20 @@ def draw_skeleton(frame, results, connections):
     style = mp.solutions.drawing_styles
 
     if results.pose_landmarks:
+        #pelvis as a reference to see if the gymnast is on the ground or executing the acrobatic exercise)
+        y_pelvis = results.pose_landmarks.landmark[24].y
+        thr = 0.5
         visible_landmarks = []
         for points in body_parts.values():
             visible_landmarks.extend(points)
         for i in range(1,33): #iterate for every landmark
             if i not in visible_landmarks:
                 results.pose_landmarks.landmark[i].visibility = 0.0
-        skeleton.draw_landmarks(
-            frame,
-            results.pose_landmarks,
-            connections,
-            landmark_drawing_spec=style.get_default_pose_landmarks_style())
+        if y_pelvis < thr:
+            skeleton.draw_landmarks(
+                frame,
+                results.pose_landmarks,
+                connections,
+                landmark_drawing_spec=style.get_default_pose_landmarks_style())
     return frame
 

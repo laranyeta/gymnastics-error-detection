@@ -33,28 +33,30 @@ def process_nans(frame, results):
     if results.pose_landmarks:
         for idx, landmark in enumerate(results.pose_landmarks.landmark):
             if landmark.visibility > 0.5:
-                coords[f"x_{idx}"] = w*landmark.x
-                coords[f"y_{idx}"] = h*landmark.y
+                coords[f"x_{idx}"] = int(w*landmark.x)
+                coords[f"y_{idx}"] = int(h*landmark.y)
             else:
                 coords[f"x_{idx}"] = np.nan
                 coords[f"y_{idx}"] = np.nan
-    #TO DO: processing remaining!!
-    return results
+    else:
+        for idx in range(33): #every landmark is nan
+            coords[f"x_{idx}"] = np.nan
+            coords[f"x_{idx}"] = np.nan
+    return coords
 
-def get_point(idx, results, width, height): #returns point given a landmark
-    return [int(width*results.pose_landmarks.landmark[idx].x), 
-            int(height*results.pose_landmarks.landmark[idx].y)]
+def get_point(coords, idx): #returns point given a landmark
+    return [coords[f"x_{idx}"], coords[f"y_{idx}"]]
 
-def create_bones(results,w,h):
+def create_bones(coords):
     bones = {}
-    if not results.pose_landmarks:
+    if np.isnan(coords[f"x_0"]): #assuming if first coord is nan everything is nan
         return bones #None
     
     bodyparts_idx = {"shoulder": 11,"elbow": 13,"wrist": 15,"hip": 23,"knee": 25,"ankle": 27,"tiptoe": 31}
     points = {}
     for part, idx in bodyparts_idx.items():
-        points[f"{part}_left"] = get_point(idx, results, width=w, height=h)
-        points[f"{part}_right"] = get_point(idx+1, results, width=w, height=h) #mediapipe structure pattern
+        points[f"{part}_left"] = get_point(coords, idx)
+        points[f"{part}_right"] = get_point(coords, idx+1) #mediapipe structure pattern (right=left+1)
 
     bones = {
         "torso": [points["shoulder_right"], points["shoulder_left"]],

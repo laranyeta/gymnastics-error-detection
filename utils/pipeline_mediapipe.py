@@ -1,63 +1,45 @@
-#### VISUALIZATION.PY (WIP) ###############################
-## involves visual processes related to pose estimation
-## extraction from human skeleton
-###########################################################
 import cv2
 import mediapipe as mp
 import numpy as np
 
-def extract_pose(frame):
-    pose = mp.solutions.pose
-    connections = pose.POSE_CONNECTIONS
-    pose_estimation = pose.Pose(static_image_mode=True,
-                        model_complexity=2,
-                        enable_segmentation=False,
-                        min_detection_confidence=0.8,
-                        min_tracking_confidence=0.8)
+def extract_pose(frame, pose_model):
     h, w, _ = frame.shape
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #convert to rgb to process
-    results = pose_estimation.process(frame)
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    results = pose_model.process(frame_rgb)
 
     coords = {}
+    for i in range(33):
+        coords[f"x_{i}"] = np.nan
+        coords[f"y_{i}"] = np.nan
+
     if results.pose_landmarks:
         for idx, landmark in enumerate(results.pose_landmarks.landmark):
-            if landmark.visibility > 0.5: #es veu
-                coords[f"x_{idx}"] = w*landmark.x
-                coords[f"y_{idx}"] = h*landmark.y
-            else:
-                coords[f"x_{idx}"] = np.nan
-                coords[f"y_{idx}"] = np.nan
+                coords[f"x_{idx}"] = w * landmark.x
+                coords[f"y_{idx}"] = h * landmark.y
+    
+    return coords
 
-    return results, connections
+def draw_skeleton(frame, fixed_coords, connections):
+    h,w = frame.shape[:2]
+    visible_landmarks = [11,12,13,14,15,16,23,24,25,26,27,28,31,32]
+    y_pelvis = fixed_coords.get("y_24", h)
+    thr = h*0.5
 
-### fer-ho amb opencv
-def draw_skeleton(frame, results, connections):
-    #bone mapping
-    body_parts = {
-        "shoulders": [11,12],
-        "arms": [13,14,15,16],
-        "pelvis": [23,24],
-        "legs": [25,26,27,28],
-        "toe": [31,32]
-    }
-    skeleton = mp.solutions.drawing_utils
-    style = mp.solutions.drawing_styles
+    if y_pelvis < thr:
+        for connection in connections:
+            start_idx, end_idx = connection #start -> [0], end -> [1]
 
-    if results.pose_landmarks:
-        #pelvis as a reference to see if the gymnast is on the ground or executing the acrobatic exercise)
-        y_pelvis = results.pose_landmarks.landmark[24].y
-        thr = 0.5
-        visible_landmarks = []
-        for points in body_parts.values():
-            visible_landmarks.extend(points)
-        for i in range(1,33): #iterate for every landmark
-            if i not in visible_landmarks:
-                results.pose_landmarks.landmark[i].visibility = 0.0
-        if y_pelvis < thr:
-            skeleton.draw_landmarks(
-                frame,
-                results.pose_landmarks,
-                connections,
-                landmark_drawing_spec=style.get_default_pose_landmarks_style())
+            if start_idx in visible_landmarks and end_idx in visible_landmarks:
+                x1 = fixed_coords.get(f"x_{start_idx}",0)
+                y1 = fixed_coords.get(f"y_{start_idx}",0)
+                x2 = fixed_coords.get(f"x_{end_idx}",0)
+                y2 = fixed_coords.get(f"y_{end_idx}",0)
+
+                if not (np.isnan(x1) or np.isnan(y1) or np.isnan(x2) or np.isnan(y2)):
+                    point1 = (int(x1), int(y1))
+                    point2 = (int(x2), int(y2))
+
+                    cv2.line(frame, point1, point2, (0, 255, 0), 2)
+                    cv2.circle(frame, point1, 4, (0, 0, 255), -1)
+                    cv2.circle(frame, point2, 4, (0, 0, 255), -1)
     return frame
-

@@ -6,10 +6,12 @@ from utils.data import read_video, save_video
 from utils.pipeline_mediapipe import extract_pose, draw_skeleton
 from utils.optimization import interpolation_smoothing
 
-input_path = "dataset/video_test/flicflac.mp4"
-filename = input_path.split("/")[-1].replace(".mp4", "")
-output_path = "outputs"
+category = "straddle"
+input_path = f"dataset/{category}/006.mov"
+output_path = f"outputs/{category}"
+os.makedirs(output_path, exist_ok=True)
 
+valid_extensions = (".mp4", ".mov", ".avi")
 mp_pose = mp.solutions.pose
 pose_model = mp_pose.Pose(
     static_image_mode=False, 
@@ -19,28 +21,33 @@ pose_model = mp_pose.Pose(
 )
 connections = mp_pose.POSE_CONNECTIONS
 
-frames = read_video(input_path)
-print(f"[DEBUG] {len(frames)} frames have been read")
+filename = os.path.splitext(os.path.basename(input_path))[0]
 
-raw_coords_list = []
-print("[LOADING] Extracting pose...")
-for frame in frames:
-    coords = extract_pose(frame, pose_model)
-    raw_coords_list.append(coords)
+if input_path.lower().endswith(valid_extensions):
+    frames = read_video(input_path)
+    print(f"[DEBUG] {len(frames)} frames have been read")
 
-print("[LOADING] Processing interpolation and Pose Tensor...")
-fixed_draw, rnn_tensor = interpolation_smoothing(raw_coords_list)
+    raw_coords_list = []
+    print("[LOADING] Extracting pose...")
+    for frame in frames:
+        coords = extract_pose(frame, pose_model)
+        raw_coords_list.append(coords)
 
-result_frames = []
-for i, frame in enumerate(frames):
-    frame_with_skeleton = draw_skeleton(frame, fixed_draw[i], connections)
-    result_frames.append(frame_with_skeleton)
+    print("[LOADING] Processing interpolation and Pose Tensor...")
+    fixed_draw, rnn_tensor = interpolation_smoothing(raw_coords_list)
 
-os.makedirs(output_path, exist_ok=True)
-save_video(result_frames, f"{output_path}/{filename}_out.avi")
+    result_frames = []
+    for i, frame in enumerate(frames):
+        frame_with_skeleton = draw_skeleton(frame, fixed_draw[i], connections)
+        result_frames.append(frame_with_skeleton)
 
-print("[LOADING] Creating coordinate JSON for later RNN extraction...")
-with open(f"{output_path}/{filename}_rnn_data.json", 'w') as f:
-    json.dump(rnn_tensor, f)
+    os.makedirs(output_path, exist_ok=True)
+    save_video(result_frames, f"{output_path}/{filename}.avi")
 
-print(f"[SUCCESS] Output video and coordinate data have been saved in {output_path} directory.")
+    print("[LOADING] Creating coordinate JSON for later RNN extraction...")
+    with open(f"{output_path}/{filename}.json", 'w') as f:
+        json.dump(rnn_tensor, f)
+
+    print(f"[SUCCESS] Output video and coordinate data have been saved in {output_path} directory.")
+else:
+    print(f"[ERROR] Not a valid extension for the input video.")

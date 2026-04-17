@@ -1,0 +1,416 @@
+\documentclass[10pt,a4paper,twocolumn,twoside]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[catalan]{babel}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{times}
+\usepackage{titlesec}
+\usepackage{multirow}
+\usepackage{lettrine}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage[top=2cm, bottom=1.5cm, left=2cm, right=2cm]{geometry}
+\usepackage[figurename=Fig.,tablename=TAULA]{caption}
+\usepackage{float}
+\captionsetup[table]{textfont=sc}
+
+\author{\LARGE\sffamily Lara Castillejo Roig}
+\title{\Huge{\sffamily Sistema Automàtic de Detecció d'Errors en Gimnàstica Artística mitjançant Deep Learning}}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+\titleformat{\section}
+{\large\sffamily\scshape\bfseries}
+{\textbf{\thesection}}{1em}{}
+
+\begin{document}
+
+\fancyhead[LO]{\scriptsize Lara Castillejo Roig: Sistema Automàtic de Detecció d'Errors en Gimnàstica Artística mitjançant Deep Learning}
+\fancyhead[RO]{\thepage}
+\fancyhead[LE]{\thepage}
+\fancyhead[RE]{\scriptsize EE/UAB TFG INFORMÀTICA: Sistema Automàtic de Detecció d'Errors en Gimnàstica Artística mitjançant Deep Learning}
+
+\fancyfoot[CO,CE]{}
+
+\fancypagestyle{primerapagina}
+{
+   \fancyhf{}
+   \fancyhead[L]{\scriptsize TFG EN ENGINYERIA INFORMÀTICA, ESCOLA D'ENGINYERIA (EE), UNIVERSITAT AUTÒNOMA DE BARCELONA (UAB)}
+   \fancyfoot[C]{\scriptsize Abril de 2026, Escola d'Enginyeria (UAB)}
+}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\pagestyle{fancy}
+
+\twocolumn[\begin{@twocolumnfalse}
+
+\maketitle
+
+\thispagestyle{primerapagina}
+
+\begin{center}
+{\vrule depth 0pt height 0.5pt width 4cm\hspace{7.5pt}%
+\raisebox{-3.5pt}{\fontfamily{pzd}\fontencoding{U}\fontseries{m}\fontshape{n}\fontsize{11}{12}\selectfont\char70}%
+\hspace{7.5pt}\vrule depth 0pt height 0.5pt width 4cm\relax}
+\end{center}
+
+\end{@twocolumnfalse}]
+
+\section{Introducció}
+
+\lettrine[lines=3]{E}{ls} Jocs Olímpics de París 2024 van evidenciar una problemàtica històrica en la gimnàstica artística: la immensa dificultat d'arbitrar rutines d'alta velocitat de forma exclusivament manual. La polèmica mediàtica sorgida a la final de terra femenina, centrada en la validació del grau de rotació d'un salt acrobàtic per a la Nota de Dificultat (\textit{D-Score})\cite{paris_2024}, va posar de manifest la pressió i la càrrega cognitiva a la qual estan sotmesos els jutges. Si bé en la dificultat existeix una via de reclamació oficial, els jutges depenen exclusivament de la seva agudesa visual per detectar petits errors biomecànics en fraccions de segon. Aquest factor humà introdueix una inevitable subjectivitat en l'avaluació de la Nota d'Execució (\textit{E-Score}) \cite{olympics_scoring}. Aquesta nota avalua exclusivament la perfecció tècnica de l'exercici: parteix d'una base de 10.0 punts sobre la qual els jutges apliquen deduccions per cada error de postura, flexió o aterratge. Es tracta d'una puntuació crítica que, a diferència de la dificultat, és estrictament inalterable segons el reglament.
+
+Tot i que la intel·ligència artificial ja s'utilitza a competicions Olímpiques mitjançant el sistema multimilionari d'escaneig 3D \textit{Judging Support System}, desenvolupat per \textit{Fujitsu} \cite{fujitsu_jss}, el seu elevat cost el fa inaccessible fora de l'èlit mundial. Això deixa milers de clubs de tecnificació i atletes amateurs sense eines d'anàlisi biomecànica objectives.
+
+\section{Objectius}
+
+L'objectiu principal d'aquest projecte és democratitzar l'accés a l'anàlisi esportiva desenvolupant un sistema automàtic de detecció d'errors basat en Visió per Computador de baix cost a partir de vídeos monoculars.
+
+No obstant això, després de la primera fase d'investigació, s'ha efectuat una revisió crítica dels objectius específics inicials. S'ha detectat la necessitat tècnica d'ampliar l'abast del projecte, passant de la implementació cega d'un únic model a l'avaluació comparativa de diverses arquitectures. Aquesta reformulació permet entendre com el biaix de l'etiquetatge i l'ús de mètriques afecten l'avaluació d'acrobàcies d'alta velocitat. Els objectius específics actualitzats són els següents:
+
+\begin{enumerate}
+    \item \textbf{Auditoria i Selecció de l'Arquitectura:} Avaluar comparativament l'eficiència de diferents models de \textit{Human Pose Estimation} (\textit{HPE}) (arquitectures \textit{Top-Down} com \textit{YOLO} \cite{yolov8}, \textit{Visions Transformers} com ara \textit{Sapiens-2B} \cite{sapiens_2024} i solucions basades en grafs com \textit{MediaPipe BlazePose} \cite{mediapipe, blazepose_2020}) per determinar la seva idoneïtat davant l'oclusió i l'alta velocitat pròpia de les acrobàcies executades per la gimnasta.
+
+    \item \textbf{Segmentació Temporal i Classificació d'Acrobàcies:} Desenvolupar un \textit{pipeline} de dues etapes capaç d'aïllar automàticament la fase aèria de l'exercici. Aquest filtratge espacial permetrà extreure la seqüència cinemàtica i alimentar la xarxa neuronal recurrent \textit{Long Short-Term Memory} (\textit{LSTM}) exclusivament amb els \textit{frames} d'interès per classificar el tipus de salt i, posteriorment, aplicar-hi l'avaluació d'errors pertinent.
+
+    \item \textbf{Implementació del \textit{Pipeline} i Suavitzat Temporal:} Integrar el model òptim per extreure l'esquelet \textit{frame} a \textit{frame}, aplicant tècniques d'interpolació espacial i temporal per eliminar el \textit{jitter} de la xarxa neuronal i assegurar la coherència biomecànica.
+
+    \item \textbf{Automatització de les Regles de Penalització:} Traduir les normatives geomètriques del Codi de Puntuació de la \textit{FIG} \cite{fig_rules} en llindars algorísmics (per exemple, angles màxims de flexió de genolls) per tal d'estimar automàticament les deduccions de l'atleta.
+
+    \item \textbf{Generació de \textit{Feedback} Visual:} Dissenyar un \textit{output} on se superposi l'esquelet sobre el vídeo original i es ressaltin visualment les infraccions en el moment exacte en què es produeixen, oferint al jutge l'opció d'acceptar o rebutjar l'infracció captada pel model.
+\end{enumerate}
+
+\section{Metodologia}
+
+La gestió i execució d'aquest projecte es duu a terme seguint una metodologia àgil adaptada, basada principalment en el sistema \textit{Kanban} i estructurada en cicles d'iteració definits per les fases de planificació. Atesa la naturalesa individual del projecte i l'alt component de recerca i desenvolupament algorísmic, aquesta metodologia iterativa és l'enfocament òptim. Permet una gran flexibilitat per adaptar-se als reptes tècnics que sorgeixen durant la programació i facilita el testeig continu del codi.
+
+Per articular aquesta metodologia pràctica, s'empra el programari \textit{Notion} com a eina centralitzada d'organització. Totes les tasques requerides es desglossen i s'apunten prèviament a la seva fase corresponent. A través d'aquesta plataforma s'ha dissenyat un tauler \textit{Kanban} on el flux de treball es divideix en estats de seguiment clàssics ("Per fer", "En curs", "Finalitzat"). La regla fonamental d'aquest procés és que totes les fites i tasques d'una fase s'han de complir de manera estricta abans de donar per tancada aquella iteració i avançar cap a la següent. 
+
+Així mateix, \textit{Notion} s'utilitza per a la gestió documental, l'emmagatzematge de referències i la generació i seguiment del diagrama de \textit{Gantt} (cronograma), assegurant un control rigorós dels terminis acadèmics. En resum, la metodologia de treball es manté estable i eficient respecte a la planificació original.
+
+\section{Planificació}
+
+L'arquitectura del sistema i la planificació temporal s'han estructurat de manera conjunta en cinc fases seqüencials. Aquesta planificació fusiona les etapes d'extracció, processament de dades i disseny predictiu amb les fites d'avaluació continuada requerides per l'assignatura. Actualment, el projecte es troba completant la segona d'aquestes fases.
+
+\begin{itemize}
+    \item \textbf{Fase 1: Recerca i Viabilitat:} Consisteix en la definició de l'abast del projecte i la comprensió del domini biomecànic. S'estudia l'Estat de l'Art de la Visió per Computador, avaluant l'evolució des dels models basats en parts fins a les xarxes neuronals profundes per a l'Estimació de Pose Humana.
+
+    \item \textbf{Fase 2: Implementació Base i Avaluació de Models:} Aquesta fase se centra en l'extracció robusta de les coordenades. S'avalua el rendiment de models \textit{Top-Down} (\textit{YOLO}), \textit{Frameworks} de seguiment temporal (\textit{MediaPipe}) i \textit{Vision Transformers} (\textit{Sapiens-2B}), seleccionant aquest últim per la seva superioritat davant d'oclusions severes. A nivell de processament de senyal, s'implementa la interpolació espacial (\textit{imputació KNN}) per a valors nuls i es descarta l'ús de filtres \textit{Savitzky-Golay} per evitar l'efecte d'\textit{oversmoothing} detectat en acrobàcies d'alta freqüència.
+
+    \item \textbf{Fase 3: Entrenament de Dades i Lògica:} Etapa nuclear orientada a la intel·ligència predictiva i l'arbitratge. S'inicia amb el processament del \textit{dataset} i l'entrenament de la \textit{Recurrent Neural Network} (\textit{RNN / LSTM}) encarregada de classificar l'exercici analitzat. Un cop l'acrobàcia està classificada, s'activa el mòdul de lògica i regles: s'extreuen els angles articulars de l'esquelet i es contrasten amb els llindars geomètrics establerts pel Codi de Puntuació de la \textit{FIG} per calcular automàticament les deduccions tècniques (\textit{E-Score}).
+
+    \item \textbf{Fase 4: Interfície i Validació:} Aquesta etapa s'inicia amb el desenvolupament de l'\textit{output} visual final del \textit{pipeline}, on se superposa l'esquelet estabilitzat, la categoria de l'acrobàcia i l'estimació de deduccions sobre el vídeo original. Disposar d'aquesta eina visual permetrà dur a terme, de manera conjunta amb la redacció de l'Informe Final, la fase de validació i ajustament de la \textit{RNN} amb noves dades, facilitant la detecció visual de falsos positius i l'avaluació de resultats.
+
+    \item \textbf{Fase 5: Tancament i Defensa:} Última etapa reservada per a la consolidació del codi al dossier final, la redacció de la memòria en format d'article acadèmic i la preparació de la defensa oral davant del tribunal avaluador.
+\end{itemize}
+
+A la Taula \ref{tab:planificacio} es desglossa la temporalitat d'aquestes fases, reflectint les adaptacions metodològiques realitzades. Complementàriament, a l'\textbf{Apèndix A} d'aquest document s'adjunta el diagrama de \textit{Gantt} del projecte. Aquest cronograma visual s'ha gestionat mitjançant \textit{Notion} i s'ha dissenyat gràficament amb l'eina \textit{Canva} per facilitar el seguiment de la càrrega de treball al llarg dels mesos.
+
+\begin{table}[H]
+\centering
+\caption{Cronograma de tasques i fites d'avaluació actualitzat}
+\label{tab:planificacio}
+\renewcommand{\arraystretch}{1.2} 
+\begin{tabular}{p{0.8cm} p{4.2cm} c}
+\hline
+\textbf{Id} & \textbf{Tasca i Fites} & \textbf{Dates} \\ \hline
+\\[-2ex]
+
+\multicolumn{3}{l}{\textbf{Fase 1: Recerca i Viabilitat}} \\ 
+T1.1 & Revisió de l'Estat de l'Art & 16/02 - 01/03 \\ 
+T1.2 & Estudi de l'abast i domini & 20/02 - 04/03 \\ 
+T1.3 & Informe Inicial \textbf{(Fita: 08/03)} & 01/03 - 08/03 \\[1.5ex]
+
+\multicolumn{3}{l}{\textbf{Fase 2: Implementació Base i Avaluació de Models}} \\ 
+T2.1 & Avaluació YOLO, MediaPipe, Sapiens & 09/03 - 22/03 \\ 
+T2.2 & Integració Sapiens i Proc. Senyal & 16/03 - 05/04 \\ 
+T2.3 & Informe Progrés I \textbf{(Fita: 12/04)} & 06/04 - 12/04 \\[1.5ex]
+
+\multicolumn{3}{l}{\textbf{Fase 3: Entrenament de Dades i Lògica}} \\ 
+T3.1 & Processament de dades i entrenament RNN & 13/04 - 03/05 \\ 
+T3.2 & Aplicació de la lògica de puntuació (FIG) & 04/05 - 17/05 \\ 
+T3.3 & Informe Progrés II \textbf{(Fita: 24/05)} & 18/05 - 24/05 \\[1.5ex]
+
+\multicolumn{3}{l}{\textbf{Fase 4: Interfície i Validació}} \\ 
+T4.1 & Generació de l'output visual final & 25/05 - 05/06 \\ 
+T4.2 & Validació i ajustament de la RNN & 01/06 - 14/06 \\ 
+T4.3 & Proposta Informe Final \textbf{(Fita: 14/06)} & 01/06 - 14/06 \\[1.5ex]
+
+\multicolumn{3}{l}{\textbf{Fase 5: Tancament i Defensa}} \\ 
+T5.1 & Dossier TFG \textbf{(Fita: 29/06)} & 15/06 - 29/06 \\ 
+T5.2 & Pòster \textbf{(Fita: 02/07)} & 22/06 - 02/07 \\ 
+T5.3 & Defensa \textbf{(Fita: 2-8 Juliol)} & 29/06 - 08/07 \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Estat de l'Art}
+
+La \textit{Human Pose Estimation} (\textit{HPE}, o Estimació de Pose Humana) és un subcamp de la Visió per Computador que té com a objectiu localitzar les articulacions clau, anomenades \textit{keypoints}, del cos humà en imatges o vídeos. La resolució d'aquest problema ha experimentat una evolució molt notable al llarg de les darreres dècades, lligada estretament als avenços generals en el reconeixement de patrons.
+
+Històricament, la comprensió humana en imatges va començar amb l'\textit{Object Detection} tradicional (Detecció d'Objectes). Aquests primers sistemes es limitaven a emmarcar l'individu sencer dins d'una \textit{bounding box} (capsa delimitadora). Això permetia saber on era la persona dins la imatge, però no proporcionava cap informació sobre la seva biomecànica ni la seva postura.
+
+Com a resposta a aquesta mancança, la recerca es va centrar en els mètodes basats en parts (\textit{Part-based models})\cite{partimagenet_2024}. Aquest enfocament no buscava detectar la persona sencera d'un cop, sinó que tractava d'identificar de manera independent les diferents extremitats o segments del cos (un braç, una cama, el tors) per després intentar assemblar-les i deduir-ne la postura. Tot i que suposava un avenç, aquests mètodes patien molt davant les oclusions (quan una part del cos tapava l'altra).
+
+L'autèntica revolució ha arribat amb l'era del \textit{Deep Learning}. L'aplicació de xarxes neuronals profundes ha transformat el paradigma clàssic de la detecció de parts aïllades cap al que avui coneixem formalment com a Estimació de Pose Humana \cite{zheng_hpe_survey}, un salt tecnològic impulsat inicialment per arquitectures pioneres com \textit{DeepPose} \cite{deeppose_2014}. Actualment, els models aprenen de forma conjunta a localitzar directament les coordenades espacials \textit{(x, y)} de cada articulació, demostrant una alta tolerància a la complexitat visual i a les oclusions. 
+
+L'arquitectura exacta d'aquesta sortida depèn de la topologia anatòmica amb la qual s'ha entrenat cada model (vegeu la Figura \ref{fig:hpe_keypoints}). D'una banda, el format \textit{COCO} defineix un esquelet bàsic de 17 \textit{keypoints}, sent l'estàndard utilitzat per arquitectures com \textit{YOLO} o \textit{Sapiens}. D'altra banda, el format \textit{BlazePose} expandeix aquesta xarxa fins als 33 \textit{keypoints}, capturant amb molt més detall les extremitats distals (mans i peus). A causa d'aquest nivell de precisió en els peus, que és vital per avaluar la biomecànica d'una gimnasta, s'ha establert l'estructura geomètrica de \textit{BlazePose} com a base per al tensor d'entrada de la xarxa \textit{RNN} d'aquest projecte.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{img/hpe_keypoints.png}
+    \caption{Comparativa de les topologies anatòmiques estandarditzades en \textit{Human Pose Estimation} (\textit{HPE}). A l'esquerra, l'esquelet \textit{COCO} (17 punts); a la dreta, l'esquelet \textit{BlazePose} (33 punts).}
+    \label{fig:hpe_keypoints}
+\end{figure}
+
+En els darrers anys, el desenvolupament de noves arquitectures de \textit{Deep Learning} ha impulsat diferents paradigmes per extreure aquests \textit{keypoints}. Els models actuals es poden classificar en tres grans famílies metodològiques que s'avaluen en aquest projecte:
+
+\begin{enumerate}
+    \item \textbf{Models \textit{Top-Down} basats en \textit{CNN}:} Aquest enfocament prové del concepte de les capses delimitadores. Detecta primer la persona mitjançant una \textit{bounding box} i, posteriorment, retalla la imatge per estimar-ne els \textit{keypoints}. El màxim exponent actual d'aquesta eficiència és \textit{YOLO} (en concret, \textit{YOLO26x-pose}) \cite{yolov8}, tot i que conviu amb altres alternatives clàssiques com \textit{HRNet} \cite{hrnet} o \textit{AlphaPose} \cite{alphapose}, dissenyades per a postures estàndard.
+
+    \item \textbf{Models basats en \textit{Vision Transformers} (\textit{ViT}):} Arquitectures recents com \textit{Sapiens-2B} \cite{sapiens_2024} (entrenat amb 2.000 milions de paràmetres) desenvolupat per \textit{Meta}, o models previs com \textit{ViTPose} \cite{vitpose}, processen la imatge de manera global mitjançant mecanismes d'atenció. Aquesta aproximació elimina la necessitat de retallades prèvies i està dissenyada per entendre postures complexes i oclusions.
+
+    \item \textbf{Solucions basades en Grafs i Seguiment Temporal:} \textit{Frameworks} com \textit{MediaPipe BlazePose} \cite{blazepose_2020} utilitzen una topologia de 33 \textit{keypoints} i, a diferència dels anteriors, incorporen filtres temporals que prediuen la posició basant-se en la inèrcia del \textit{frame} anterior, garantint coherència biomecànica.
+\end{enumerate}
+
+\section{Desenvolupament}
+
+Aquesta secció detalla les fases tècniques i algorísmiques executades durant la primera meitat del projecte. S'hi exposa des de l'avaluació empírica que justifica la tria del model d'intel·ligència artificial, fins a la implementació del codi de Visió per Computador, l'anàlisi de filtres de suavitzat temporal i, finalment, l'estructuració de les dades normalitzades per a l'entrenament del classificador \textit{RNN}.
+
+\subsection{Estudi de Viabilitat i Selecció de l'Arquitectura}
+Per poder establir una comparativa objectiva d'aquests sistemes, s'utilitzen mètriques estandarditzades. Les més rellevants per a aquest projecte són el \textit{PCK} (\textit{Percentage of Correct Keypoints}) \cite{yang_pck_2013}, que avalua si un punt predit del model cau dins d'un radi de tolerància respecte al \textit{Ground Truth}, i el \textit{mAP} (\textit{Mean Average Precision}), una mètrica basada en el \textit{dataset COCO} \cite{coco_dataset_2014} que pondera l'error segons la similitud de l'objecte.
+
+Per calcular aquest \textit{mAP}, els models utilitzen la funció de Similitud de \textit{Keypoints} d'Objecte (\textit{Object Keypoint Similarity, OKS}) \cite{yolo_oks}. Aquesta mètrica és fonamental ja que no avalua totes les articulacions amb la mateixa severitat. Matemàticament, l'OKS per a una persona s'expressa de la següent manera:
+
+\begin{equation}
+    OKS = \frac{\sum_{i} \exp\left(-\frac{d_i^2}{2s^2\kappa_i^2}\right) \delta(v_i > 0)}{\sum_{i} \delta(v_i > 0)}
+    \label{eq:oks}
+\end{equation}
+
+On cada variable té el següent propòsit geomètric:
+\begin{itemize}
+    \item $d_i$: És la distància euclidiana entre el \textit{keypoint} predit per la xarxa i el marcat manualment al \textit{Ground Truth}.
+    \item $s$: És l'escala de l'objecte (calculada a partir del tors de la gimnasta), utilitzada per fer que la mètrica sigui invariant a la mida de la persona a la pantalla.
+    \item $v_i$: És l'indicador de visibilitat del \textit{Ground Truth}. L'expressió $\delta(v_i > 0)$ assegura que només es penalitzen o s'avaluen aquells punts que realment estan visibles i etiquetats a la imatge original.
+    \item $\kappa_i$: És la constant empírica de tolerància específica per a cada articulació.
+\end{itemize}
+
+L'ús d'aquesta constant $\kappa_i$ en el denominador de la funció exponencial fa que actuiï com a controlador del radi de caiguda de l'error. Com s'il·lustra a la Figura \ref{fig:oks_constants}, l'estàndard \textit{COCO} assigna un radi de tolerància més ampli a articulacions com els malucs ($\kappa = 0.107$) o els genolls ($\kappa = 0.087$), ja que en imatges quotidianes l'etiquetatge manual és imprecís a causa de la roba ampla i l'oclusió anatòmica. No obstant això, cal destacar una particularitat clau del domini d'aquest projecte: en la gimnàstica artística, l'ús de mallots ajustats proporciona una visibilitat biomecànica gairebé perfecta. Tot i que teòricament aquesta nitidesa permetria recalcular i endurir empíricament aquestes constants cap a valors molt més restrictius, en aquesta fase s'han mantingut els paràmetres $\kappa_i$ originals per tal de garantir una comparativa justa i estandarditzada entre arquitectures (\textit{Sapiens} i \textit{YOLO}). Per contra, els punts amb referències visuals molt rígides i clares des del primer moment, com els ulls ($\kappa = 0.025$), s'avaluen amb un marge d'error pràcticament nul.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{img/oks.png}
+    \caption{Representació visual de les constants de tolerància $\kappa_i$ per al càlcul de l'OKS. L'àrea dels cercles verds il·lustra el marge d'error permès segons la variabilitat de l'etiquetatge humà: a major dificultat d'anotació (cames/malucs), major és el radi de tolerància acceptat.}
+    \label{fig:oks_constants}
+\end{figure}
+
+Per determinar quina d'aquestes arquitectures és la més adient per a les exigències de la gimnàstica artística, s'ha plantejat un estudi de viabilitat preliminar dividit en dues fases:
+
+En la primera fase, s'ha avaluat el rendiment teòric dels models sobre una mostra d'un \textit{dataset} bàsic exportat de la plataforma \textit{Roboflow}, en el qual s'han fet les anotacions sobre imatges de persones practicant \textit{running}. S'ha escollit aquest \textit{dataset} a causa de la senzillesa de les postures que el componen, fent que l'avaluació sigui justa entre els tres models a avaluar. Tot i que es va plantejar l'avaluació amb els \textit{datasets} propis amb què s'ha entrenat cada model, el caràcter privat d'alguns d'aquests va impedir-ho. En conseqüència, s'ha optat per aquesta base de dades neutral per garantir una comparativa equitativa. Els resultats de la Taula \ref{tab:avaluacio-running} reflecteixen la precisió base de cada arquitectura en condicions genèriques i postures quotidianes.
+
+\begin{table}[htbp]
+\centering
+\caption{Avaluació preliminar sobre el dataset de \textit{running}.}
+\label{tab:avaluacio-running}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{2.6cm}ccc}
+\hline
+\textbf{Model} & \textbf{mAP@0.5} & \textbf{mAP@0.75} & \textbf{PCK@0.2} \\ \hline
+YOLO26x-pose & \textbf{67.7\%} & \textbf{46.2\%} & \textbf{88.8\%} \\
+MediaPipe BlazePose & 59.5\% & 39.3\% & 81.7\% \\
+Sapiens-2B & 50.6\% & 34.5\% & 76.4\% \\ \hline
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+No obstant això, el rendiment en \textit{datasets} genèrics no sempre es tradueix en eficàcia dins d'un entorn d'alta velocitat i complexitat postural. Per aquest motiu, en la segona fase s'ha realitzat una prova de concepte empírica sobre un vídeo real de gimnàstica. S'ha analitzat un fragment de rutina a la barra d'equilibris (\textit{Balance Beam}) que inclou tres acrobàcies. Mitjançant l'aplicació en línia \textit{CVAT}, s'ha generat un \textit{Ground Truth} manual \textit{frame a frame} dels 84 \textit{frames} que componen el vídeo per obtenir mètriques directament extrapolables al domini del projecte. Els resultats es mostren a la Taula \ref{tab:avaluacio-gym}.
+
+\begin{table}[htbp]
+\centering
+\caption{Avaluació sobre fragment acrobàtic en barra d'equilibris.}
+\label{tab:avaluacio-gym}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{2.6cm}ccc}
+\hline
+\textbf{Model} & \textbf{mAP@0.5} & \textbf{mAP@0.75} & \textbf{PCK@0.2} \\ \hline
+YOLO26x-pose & 19.2\% & 9.3\% & 44.0\% \\
+MediaPipe BlazePose & 13.4\% & 6.9\% & 35.4\% \\
+Sapiens-2B & \textbf{36.6\%} & \textbf{19.2\%} & \textbf{72.7\%} \\ \hline
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+A partir d'aquests resultats preliminars, a priori s'escull l'arquitectura de \textit{Sapiens-2B} com a motor d'estimació principal. Tal com s'observa en la degradació severa de les mètriques de \textit{YOLO} i \textit{MediaPipe} a la Taula \ref{tab:avaluacio-gym}, les oclusions naturals i l'escorç d'una acrobàcia penalitzen greument les arquitectures \textit{Top-Down}. L'enfocament basat en \textit{Vision Transformers} demostra una capacitat de comprensió global molt superior per identificar l'estructura anatòmica de la gimnasta en l'aire. Aquesta decisió estableix la base per a les següents etapes de desenvolupament, on s'exploraran tècniques de processament i suavitzat per potenciar la sortida d'aquests models.
+
+\subsection{Avenços en l'Extracció}
+El desenvolupament tècnic s'ha iniciat amb la implementació i avaluació dels models \textit{HPE}. Les primeres extraccions experimentals es van dur a terme utilitzant \textit{MediaPipe BlazePose}. No obstant això, davant les limitacions detectades en postures acrobàtiques complexes (oclusions severes i pèrdua d'articulacions), s'ha integrat i posat en producció el model \textit{Sapiens-2B}.
+
+Actualment, el \textit{pipeline} ja és capaç d'ingerir vídeos reals de gimnàstica i retornar tant les coordenades temporals en format JSON com l'\textit{output} visual del vídeo processat, que superposa l'esquelet sobre el \textit{frame} original (vegeu la Figura \ref{fig:pose_output}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{img/pose_test.png}
+    \caption{Exemple de l'\textit{output} visual generat per l'algorisme actual, mostrant l'estimació de pose sobre un \textit{frame} d'acrobàcia.}
+    \label{fig:pose_output}
+\end{figure}
+
+\subsection{Aplicació d'Interpolació i Suavitzat}
+Inicialment, per resoldre el problema de les coordenades perdudes (valors NaN) i la incoherència espacial (\textit{jitter}) observada en les extraccions de pose amb el model \textit{MediaPipe BlazePose}, es va dissenyar un mòdul de processament de senyal. Aquest mòdul combinava interpolació lineal espacial, implementant un imputador \textit{K-Nearest Neighbors}, amb un filtre polinòmic de \textit{Savitzky-Golay} \cite{savgol} per suavitzar les trajectòries resultants.
+
+En aplicar aquest \textit{pipeline} sobre la sortida, l'avaluació empírica va revelar un comportament dual depenent de la tipologia de l'acrobàcia:
+\begin{enumerate}
+    \item \textbf{Millora en moviments parabòlics continus:} En acrobàcies d'extensió com l'\textit{Aerial} (roda sense mans), on la trajectòria de les extremitats dibuixa arcs fluids, el filtre assoleix el seu objectiu. Com a resultat, alinea l'esquelet amb més precisió, garantint una biomecànica més realista de la gimnasta avaluada (vegeu la Figura \ref{fig:compare_good}).
+
+    \item \textbf{Oversmoothing i Confusió Lateral:} La limitació del filtre es fa evident en acrobàcies d'alta freqüència i auto-oclusió severa, com ara un \textit{Backflip} (salt mortal enrere). En aquests girs, la càmera capta la gimnasta totalment de perfil, provocant que l'arquitectura del model perdi la percepció de profunditat i confongui les extremitats esquerra i dreta. El filtre de \textit{Savitzky-Golay}, en intentar suavitzar aquest intercanvi de cames, difumina les trajectòries i genera una deformació de l'esquelet (vegeu la Figura \ref{fig:compare_bad}).
+\end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{img/compare_smooth_good.png}
+    \caption{Comparativa de l'extracció de coordenades dels \textit{frames} 12, 13 i 18 del vídeo de prova amb \textit{MediaPipe BlazePose}. A dalt, el resultat en cru (\textit{raw}) de la xarxa neuronal. A baix, l'esquelet estabilitzat després d'aplicar la interpolació i el filtre de \textit{Savitzky-Golay}.}
+    \label{fig:compare_good}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{img/compare_smooth_bad.png}
+    \caption{Comparativa de l'extracció de coordenades dels \textit{frames} 42, 43 i 44 del vídeo de prova amb \textit{MediaPipe BlazePose}. A dalt, el resultat en cru (\textit{raw}) de la xarxa neuronal. A baix, el resultat després d'aplicar la interpolació i el filtre de \textit{Savitzky-Golay}.}
+    \label{fig:compare_bad}
+\end{figure}
+
+En conseqüència, atès que l'objectiu principal és alimentar una xarxa \textit{LSTM} per classificar precisament aquestes acrobàcies complexes, s'ha decidit suprimir l'aplicació generalitzada del filtre polinòmic per preservar les coordenades reals captades pel model \textit{HPE}.
+
+\subsection{Creació del Dataset i Disseny del Classificador}
+En paral·lel al \textit{pipeline} de visió, s'està construint la base de dades necessària per entrenar la \textit{RNN} que s'encarregarà de la classificació de l'exercici.
+
+Per tal de dotar el model d'una comprensió robusta de la biomecànica gimnàstica, l'abast d'aquest classificador s'ha acotat a la detecció de quatre tipologies acrobàtiques fonamentals: \textit{Tuck} (salt agrupat), \textit{Pike} (salt carpat tancat), \textit{Split} (obertura longitudinal) i \textit{Straddle} (salt carpat obert). A nivell de classificació espacial per a la xarxa, la diferenciació clau entre aquestes dues últimes categories recau en l'orientació i posició dels turmells: en l'\textit{Split} (salt asimètric vist generalment de perfil) un dels turmells apunta cap a baix, mentre que en l'\textit{Straddle} (salt simètric d'obertura frontal) ambdós turmells s'orienten cap amunt. A la Figura \ref{fig:classes_rnn} es presenta un exemple visual de l'estimació de pose per a cadascuna d'aquestes categories.
+
+Actualment, s'estan recopilant i retallant vídeos procedents de contingut dels Jocs Olímpics (com l'utilitzat en el dataset \textit{FineGym} \cite{finegym}), disposant d'un conjunt inicial d'entre 5 i 10 mostres per a cadascuna d'aquestes quatre classes, amb l'objectiu d'ampliar-ho posteriorment a un volum aproximat de 50 mostres per tipologia.
+
+El codi encarregat de transformar aquests vídeos en tensors de coordenades normalitzades en format JSON ja és funcional. Per tal de garantir l'entrenament de la xarxa, totes les seqüències s'ajusten a una longitud temporal fixa de \textit{frames}. Aquests tensors estructurats s'utilitzaran com a entrada directa per a l'arquitectura predictiva. En concret, s'ha dissenyat un model basat en el paradigma \textit{Sequence-to-Vector}: la xarxa extreu els patrons temporals mitjançant capes recurrents \textit{LSTM} \cite{lstm_rnn_2021}, que posteriorment es connecten a capes denses (\textit{Fully Connected}) culminant en una funció d'activació \textit{Softmax} per categoritzar l'acrobàcia. Gràcies a aquesta seqüenciació homogènia de l'entrada, les capes \textit{LSTM} no avaluen les posicions espacials de manera aïllada \textit{frame} a \textit{frame}, sinó que aprenen la dinàmica del moviment de cada articulació al llarg de tota la fase aèria. L'arquitectura base d'aquesta xarxa classificadora ja es troba plantejada a nivell de codi i s'iniciarà la fase d'entrenament un cop el \textit{dataset} assoleixi el volum requerit.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{img/classification.png}
+    \caption{Exemples visuals de l'extracció de pose amb el model \textit{Sapiens-2B} per a les quatre categories principals d'acrobàcies que conformen el \textit{dataset} d'entrenament de la xarxa classificadora RNN. A dalt a l'esquerra: \textit{Tuck}; a dalt a la dreta: \textit{Pike}; a baix a l'esquerra: \textit{Split}; i a baix a la dreta: \textit{Straddle}.}
+    \label{fig:classes_rnn}
+\end{figure}
+
+\subsection{Estructura de Dades i Format d'Entrada (JSON)}
+Per tal de connectar el \textit{pipeline} de Visió per Computador amb la futura xarxa neuronal classificadora (\textit{RNN}), s'ha definit una estructura de dades estandarditzada en format JSON. Aquest format ha estat escollit per la seva lleugeresa i la seva integració nativa amb llibreries de \textit{Deep Learning} basades en \textit{Python} com \textit{PyTorch}.
+
+L'arxiu JSON resultant actua com un tensor temporal. Està format per una llista seqüencial on cada element representa un \textit{frame} vàlid de l'acrobàcia. A l'interior de cada element s'emmagatzemen les coordenades espacials ($X$ i $Y$) dels 33 \textit{keypoints} de l'esquelet. 
+
+Un aspecte crític d'aquest procés és la normalització prèvia de les dades. Les coordenades no s'exporten en valors absoluts de píxels de la imatge original, sinó que es normalitzen geomètricament: s'estableix el punt mig del tors com a origen de coordenades (0,0) i s'escalen les distàncies respecte al tronc de la gimnasta. Aquesta transformació espacial garanteix que la xarxa \textit{LSTM} sigui invariant a l'escala (la distància i resolució de la càmera) i a la translació (la posició de l'atleta a la pantalla), permetent que el model aprengui exclusivament de la biomecànica del moviment. 
+
+A continuació es mostra un exemple simplificat de l'estructura d'aquest diccionari de dades, on cada clau engloba un \textit{frame}:
+
+\begin{verbatim}
+[
+  { 
+    "x_11": -0.345, "y_11": -0.872,
+    "x_12": 0.345,  "y_12": -0.872,
+    ...
+    "x_28": 0.452,  "y_28": 1.205
+  },
+  {
+    "x_11": -0.340, "y_11": -0.865,
+    "x_12": 0.350,  "y_12": -0.868,
+    ...
+  }
+]
+\end{verbatim}
+
+\section*{Ús de la IA Generativa}
+En compliment de la normativa d'avaluació del Treball Final de Grau de la UAB, es declara que en l'elaboració d'aquest Informe de Progrés I s'han utilitzat eines d'Intel·ligència Artificial generativa (model \textit{Gemini 3 Pro}). 
+
+D'acord amb les directrius establertes, el seu ús s'ha limitat exclusivament a l'assistència en aspectes formals i tècnics. Concretament, l'eina s'ha emprat per a la revisió ortotipogràfica, la millora de la fluïdesa i claredat expositiva de la redacció en català, i com a suport tècnic per a la resolució de problemes de formatació i estructuració del codi en llenguatge \LaTeX.
+
+Es certifica que no s'ha utilitzat cap model generatiu per a la creació dels continguts intel·lectuals sotmesos a avaluació. La definició del context, l'establiment dels objectius, el disseny del \textit{pipeline} metodològic i la planificació temporal del projecte han estat elaborats de manera íntegrament autònoma per l'autora.
+
+\begin{thebibliography}{99}
+
+\bibitem{paris_2024}
+La Vanguardia, \textit{Una gimnasta rumana recibe la medalla de bronce once días después de la final de los JJOO}, Agost 2024. [En línia]. Disponible a: \url{https://www.lavanguardia.com/deportes/20240817/9874948/gimnasta-recibe-medalla-bronce-once-dias-final-jjoo.html}
+
+\bibitem{olympics_scoring}
+International Olympic Committee (IOC), \textit{Artistic gymnastics scoring system and judging rules: The D-score and E-score explained}. [En línia]. Disponible a: \url{https://olympics.com/en/news/artistic-gymnastics-scoring-system-judging-rules-e-d-score}
+
+\bibitem{fujitsu_jss}
+Fujitsu, \textit{Judging Support System Co-development with FIG}. [En línia]. Disponible a: \url{https://www.fujitsu.com/global/themes/data-driven/judging-support-system/}
+
+\bibitem{yolov8}
+Ultralytics, \textit{YOLOv8 Pose Task Documentation}. [En línia]. Disponible a: \url{https://docs.ultralytics.com/tasks/pose/#predict}
+
+\bibitem{sapiens_2024}
+T. Rawal \textit{et al.} (Meta), \textit{Sapiens: Foundation for Human Vision Models}, arXiv preprint arXiv:2408.12569, 2024. Disponible a: \url{https://arxiv.org/abs/2408.12569}
+
+\bibitem{mediapipe}
+Google Research, \textit{MediaPipe: A Framework for Building Perception Pipelines}. Disponible a: \url{https://arxiv.org/pdf/1906.08172}
+
+\bibitem{blazepose_2020}
+V. Bazarevsky \textit{et al.} (Google), \textit{BlazePose: On-device Real-time Body Pose tracking}, CVPR Workshop on Computer Vision for Augmented and Virtual Reality, 2020. Disponible a: \url{https://arxiv.org/abs/2006.10204}
+
+\bibitem{fig_rules}
+Fédération Internationale de Gymnastique (FIG), \textit{2025-2028 Code of Points (MAG \& WAG)}. [En línia]. Disponible a: \url{https://www.gymnastics.sport/site/rules/}
+
+\bibitem{partimagenet_2024}
+X. Li, Y. Liu, N. Dong, S. Qin, and X. Hu, \textit{PartImageNet++ Dataset: Scaling up Part-based Models for Robust Recognition}, en European Conference on Computer Vision (ECCV), 2024. Disponible a: \url{https://arxiv.org/abs/2407.10918}
+
+\bibitem{zheng_hpe_survey}
+C. Zheng, W. Wu, C. Chen, T. Yang, S. Zhu, J. Shen, N. Kehtarnavaz, and M. Shah, \textit{Deep Learning-Based Human Pose Estimation: A Survey}, ACM Computing Surveys, vol. 56, no. 1, 2023. Disponible a: \url{https://arxiv.org/pdf/2012.13392}
+
+\bibitem{deeppose_2014}
+A. Toshev and C. Szegedy, \textit{DeepPose: Human pose estimation via deep neural networks}, en Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), pp. 1653-1660, 2014. Disponible a: \url{https://arxiv.org/abs/1312.4659}
+
+\bibitem{hrnet}
+Microsoft Research, \textit{Deep High-Resolution Representation Learning for Human Pose Estimation}. Disponible a: \url{https://arxiv.org/pdf/1902.09212}
+
+\bibitem{alphapose}
+Hao-Shu Fang, \textit{AlphaPose: Whole-Body Regional Multi-Person Pose Estimation and Tracking in Real-Time}. Disponible a: \url{https://arxiv.org/pdf/2211.03375}
+
+\bibitem{vitpose}
+ViTAE-Transformer, \textit{ViTPose: Simple Vision Transformer Baselines for Human Pose Estimation}. GitHub. [En línia]. Disponible a: \url{https://github.com/ViTAE-Transformer/ViTPose}
+
+\bibitem{yang_pck_2013}
+Y. Yang and D. Ramanan, \textit{Articulated Human Detection with Flexible Mixtures of Parts}, IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 35, no. 12, pp. 2878-2890, 2013. Disponible a: \url{https://www.cs.cmu.edu/~deva/papers/pose_pami.pdf}
+
+\bibitem{coco_dataset_2014}
+T.Y. Lin \textit{et al.}, \textit{Microsoft COCO: Common Objects in Context}, en European Conference on Computer Vision (ECCV), pp. 740-755, 2014. Disponible a: \url{https://arxiv.org/abs/1405.0312}
+
+\bibitem{yolo_oks}
+D. Maji, S. Nagori, M. Mathew, and D. Poddar, \textit{YOLO-Pose: Enhancing YOLO for Multi Person Pose Estimation Using Object Keypoint Similarity Loss}, en IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW), 2022. Disponible a: \url{https://arxiv.org/abs/2204.06806}
+
+\bibitem{savgol}
+Paul W. Oxby, \textit{An Optimal Weighting Function for the Savitzky-Golay Filter}. Disponible a: \url{https://arxiv.org/pdf/2111.11667}
+
+\bibitem{finegym}
+D. Shao \textit{et al.}, \textit{FineGym: A Hierarchical Video Dataset for Fine-grained Action Understanding}. Disponible a: \url{https://arxiv.org/pdf/2004.06704}
+
+\bibitem{lstm_rnn_2021}
+C. B. Vennerød, A. Kjærran, and E. S. Bugge, \textit{Long Short-term Memory RNN}, arXiv preprint arXiv:2105.06756, 2021. Disponible a: \url{https://arxiv.org/pdf/2105.06756}
+
+\end{thebibliography}
+
+\clearpage
+\onecolumn
+\appendix
+
+\section{Diagrama de Gantt}
+\label{apx:gantt}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{img/gantt.png}
+    \caption{Cronograma del projecte (Diagrama de Gantt). Elaboració pròpia mitjançant \textit{Canva} a partir de la planificació feta a \textit{Notion}.}
+\end{figure}
+
+\end{document}

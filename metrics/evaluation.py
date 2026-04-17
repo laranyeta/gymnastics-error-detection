@@ -105,10 +105,10 @@ if __name__ == "__main__":
     dataset_opt = input("> ")
         
     if dataset_opt == "1": #running dataset
-            GT_PATH = "dataset/evaluate/running/groundtruth.json"
-            MP_PATH = "dataset/evaluate/running/mediapipe.json"
-            SP_PATH = "dataset/evaluate/running/sapiens.json"
-            YO_PATH = "dataset/evaluate/running/yolo.json"
+            GT_PATH = "metrics/ata/running/groundtruth.json"
+            MP_PATH = "metrics/data/running/mediapipe.json"
+            SP_PATH = "metrics/data/running/sapiens.json"
+            YO_PATH = "metrics/data/running/yolo.json"
             
             gt = normalize_dataframe(get_raw_pixels_from_json(GT_PATH, is_coco=True))
             mediapipe = normalize_dataframe(load_json(MP_PATH))
@@ -116,10 +116,10 @@ if __name__ == "__main__":
             yolo = normalize_dataframe(load_json(YO_PATH))
     
     elif dataset_opt == "2": #test
-            GT_PATH = "dataset/evaluate/test/groundtruth.json"
-            MP_PATH = "dataset/evaluate/test/mediapipe.json"
-            SP_PATH = "dataset/evaluate/test/sapiens.json"
-            YO_PATH = "dataset/evaluate/test/yolo.json"
+            GT_PATH = "metrics/data/test/groundtruth.json"
+            MP_PATH = "metrics/data/test/mediapipe.json"
+            SP_PATH = "metrics/data/test/sapiens.json"
+            YO_PATH = "metrics/data/test/yolo.json"
             
             gt_raw = get_raw_pixels_from_json(GT_PATH, is_coco=False)
             mediapipe_df = pd.DataFrame(load_json(MP_PATH))

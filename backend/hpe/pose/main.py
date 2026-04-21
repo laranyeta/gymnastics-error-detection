@@ -12,20 +12,14 @@ from scipy.signal import savgol_filter
 from mmpretrain.models.backbones.vision_transformer import VisionTransformer
 from mmpose.apis import inference_topdown, init_model
 
-VisionTransformer.arch_zoo.update({
-    'sapiens_0.3b': {'embed_dims': 1024, 'num_layers': 24, 'num_heads': 16, 'feedforward_channels': 4096},
-    'sapiens_0.6b': {'embed_dims': 1280, 'num_layers': 32, 'num_heads': 16, 'feedforward_channels': 5120},
-    'sapiens_1b':   {'embed_dims': 1536, 'num_layers': 40, 'num_heads': 24, 'feedforward_channels': 6144},
-    'sapiens_2b':   {'embed_dims': 1920, 'num_layers': 48, 'num_heads': 32, 'feedforward_channels': 7680},
-})
-
-os.chdir("/workspace/sapiens/pose")
-POSE_CONFIG = "/workspace/sapiens/pose/configs/sapiens_pose/coco_wholebody/sapiens_2b-210e_coco_wholebody-1024x768.py" 
-POSE_CHECKPOINT = "/workspace/sapiens/pose/checkpoints/2b/sapiens_2b_coco_wholebody_best_coco_wholebody_AP_745.pth"
+VisionTransformer.arch_zoo.update({'sapiens_2b':   {'embed_dims': 1920, 'num_layers': 48, 'num_heads': 32, 'feedforward_channels': 7680}})
+os.chdir("backend/hpe/pose") #directory main branch
+POSE_CONFIG = "backend/hpe/pose/configs/sapiens_pose/coco_wholebody/sapiens_2b-210e_coco_wholebody-1024x768.py" 
+POSE_CHECKPOINT = "backend/hpe/pose/checkpoints/2b/sapiens_2b_coco_wholebody_best_coco_wholebody_AP_745.pth"
 
 category = "pike"
-INPUT_VIDEO = f"/workspace/sapiens/dataset/videos/{category}/001.mov"
-OUTPUT_FOLDER = f"/workspace/sapiens/outputs/{category}"
+INPUT_VIDEO = f"backend/hpe/dataset/videos/{category}/001.mov"
+OUTPUT_FOLDER = f"backend/hpe/dataset/outputs/{category}"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 filename = os.path.splitext(os.path.basename(INPUT_VIDEO))[0]

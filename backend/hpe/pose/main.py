@@ -29,9 +29,13 @@ OUTPUT_FOLDER = f"/workspace/sapiens/outputs/{category}"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 filename = os.path.splitext(os.path.basename(INPUT_VIDEO))[0]
+if torch.backends.mps.is_available(): #macos compatibility
+    device = 'mps'
+else: #windows compatibility
+    device = 'cuda'
 
 print("[LOADING] Initializing Sapiens-2B model for Human Pose Estimation extraction")
-model = init_model(POSE_CONFIG, POSE_CHECKPOINT, device='cuda', override_ckpt_meta=True)
+model = init_model(POSE_CONFIG, POSE_CHECKPOINT, device=device, override_ckpt_meta=True)
 cap = cv2.VideoCapture(INPUT_VIDEO)
 frames = []
 raw_coords_list = []

@@ -3,12 +3,9 @@ import cv2
 import json
 import torch
 import numpy as np
-import pandas as pd
 
-from utils.data import sapiens2mediapipe
-from utils.vision import normalize_pose_tensor, interpolation_smoothing, draw_skeleton
-from sklearn.impute import KNNImputer
-from scipy.signal import savgol_filter
+from utils.data import sapiens2mediapipe, calculate_joint_angle
+from utils.vision import interpolation_smoothing, draw_skeleton
 from mmpretrain.models.backbones.vision_transformer import VisionTransformer
 from mmpose.apis import inference_topdown, init_model
 
@@ -32,7 +29,7 @@ print("[LOADING] Initializing Sapiens-2B model for Human Pose Estimation extract
 model = init_model(POSE_CONFIG, POSE_CHECKPOINT, device=device, override_ckpt_meta=True)
 cap = cv2.VideoCapture(INPUT_VIDEO)
 frames = []
-raw_coords_list = []
+raw_coords = []
 
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -47,17 +44,17 @@ while cap.isOpened():
     if not ret:
         break
         
-    frame_count += 1
+    frame_count += 1 #only for debug purposes
     print(f"[DEBUG] {frame_count} frames have been read")
     
     frames.append(frame)
-    pose_results = inference_topdown(model, frame, bbox)[0]
+    pose = inference_topdown(model, frame, bbox)[0]
     
-    if len(pose_results.pred_instances.keypoints) > 0:
-        kpts = pose_results.pred_instances.keypoints[0]
+    if len(pose.pred_instances.keypoints) > 0:
+        keypoints = pose.pred_instances.keypoints[0]
         
-        valid_x = [p[0] for p in kpts if p[0] > 0]
-        valid_y = [p[1] for p in kpts if p[1] > 0]
+        valid_x = [p[0] for p in keypoints if p[0] > 0]
+        valid_y = [p[1] for p in keypoints if p[1] > 0]
         
         if valid_x and valid_y:
             x_min = max(0, min(valid_x) - padding)
@@ -68,20 +65,21 @@ while cap.isOpened():
         else:
             bbox = np.array([[0, 0, width, height]])
     else:
-        kpts = []
+        keypoints = []
         bbox = np.array([[0, 0, width, height]]) 
         
-    coords = sapiens2mediapipe(kpts)
-    raw_coords_list.append(coords)
+    coords = sapiens2mediapipe(keypoints)
+    raw_coords.append(coords)
     
 cap.release()
-fixed_draw, rnn_tensor = interpolation_smoothing(raw_coords_list)
+smoothed_coords, dataframe = interpolation_smoothing(raw_coords)
+rnn_tensor = [calculate_joint_angle(frame) for frame in dataframe] 
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter(f"{OUTPUT_FOLDER}/{filename}.avi", fourcc, fps, (width, height))
 
 for i, frame in enumerate(frames):
-    frame_with_skeleton = draw_skeleton(frame.copy(), fixed_draw[i])
-    out.write(frame_with_skeleton)
+    pose_estimation = draw_skeleton(frame.copy(), smoothed_coords[i])
+    out.write(pose_estimation)
     
 out.release()
 with open(f"{OUTPUT_FOLDER}/{filename}.json", 'w') as f:

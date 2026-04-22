@@ -4,7 +4,7 @@ import json
 import torch
 import numpy as np
 
-from utils.data import sapiens2mediapipe, calculate_joint_angle
+from utils.data import coco2mediapipe, calculate_joint_angle
 from utils.vision import interpolation_smoothing, draw_skeleton
 from mmpretrain.models.backbones.vision_transformer import VisionTransformer
 from mmpose.apis import inference_topdown, init_model
@@ -68,7 +68,7 @@ while cap.isOpened():
         keypoints = []
         bbox = np.array([[0, 0, width, height]]) 
         
-    coords = sapiens2mediapipe(keypoints)
+    coords = coco2mediapipe(keypoints)
     raw_coords.append(coords)
     
 cap.release()

@@ -4,8 +4,6 @@ import pandas as pd
 
 from sklearn.impute import KNNImputer
 from scipy.signal import savgol_filter
-from mmpretrain.models.backbones.vision_transformer import VisionTransformer
-from mmpose.apis import inference_topdown, init_model
 
 
 def normalize_pose_tensor(df):

@@ -7,17 +7,18 @@ import json
 from torch.utils.data import Dataset, DataLoader
 
 LABEL_MAPPING = {"tuck": 0, "pike": 1, "split": 2, "straddle": 3}
+
 class RNNAcrobaticClassificator(nn.Module):
-    def __init__(self, input_size, hidden_size, n_classes, n_layers):
+    def __init__(self, input_size, hidden_size, n_classes, n_layers=2): #default value for n_layers
         super(RNNAcrobaticClassificator, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
-        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True, dropout=0.2) #allows memory
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=n_layers, batch_first=True, dropout=0.2) #batch, seq_length, input_size
         self.fc = nn.Linear(hidden_size, n_classes)
 
-    def forward(self,x):
+    def forward(self, x):
         out, _ = self.lstm(x)
-        out = self.fc(out[:,-1,:])
+        out = self.fc(out[:, -1, :]) #last frame
         return out
 
 class GymnasticsDataset(Dataset):
@@ -25,7 +26,7 @@ class GymnasticsDataset(Dataset):
         self.samples = []
         self.labels = []
         
-        for label, _ in LABEL_MAPPING.items():
+        for label, idx in LABEL_MAPPING.items():
             dir = os.path.join(data_path, label)
             if not os.path.exists(dir):
                 continue
@@ -36,34 +37,42 @@ class GymnasticsDataset(Dataset):
                         sequence = json.load(f)
                         tensor = self._json_to_tensor(sequence)
                         self.samples.append(tensor)
-                        self.labels.append(label)
+                        self.labels.append(idx) 
 
     def _json_to_tensor(self, sequence):
         frames = []
         for frame in sequence:
-            x = list(frame["position"].values())
-            v = list(frame["velocity"].values())
-            a= list(frame["acceleration"].values())
-            frames.append(x+v+a)
+            x = list(frame.get("position", {}).values())
+            v = list(frame.get("velocity", {}).values())
+            a = list(frame.get("acceleration", {}).values())
+            ang = list(frame.get("angles", {}).values())
+            frames.append(x + v + a + ang)
+            
         return torch.tensor(frames, dtype=torch.float32)
     
     def __len__(self):
         return len(self.samples)
     
-    def __getitem__(self,idx):
+    def __getitem__(self, idx):
         return self.samples[idx], self.labels[idx]
 
 def train():
-    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu") #running on macbook air m5
-    input_size = 198
+    if torch.backends.mps.is_available():
+        device = 'mps' #macos compatibility
+    else:
+        device = 'cuda' #windows compatibility
+    
+    input_size = 206 #33 keypoints*2 (x,y) * 3 (x,v,a) + 8 ang
     hidden_size = 128
-    n_classes = 5
+    n_classes = len(LABEL_MAPPING) #4
+    n_layers = 2
     epochs = 50
-    batch_size = 8
+    batch_size = 1 
 
     dataset = GymnasticsDataset("data")
-    loader = DataLoader(dataset, batch_size, shuffle=True)
-    model = RNNAcrobaticClassificator(input_size, hidden_size, n_classes).to(device)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    
+    model = RNNAcrobaticClassificator(input_size, hidden_size, n_classes, n_layers).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
@@ -81,7 +90,9 @@ def train():
             optimizer.step()
             total_loss += loss.item()
 
-        if (epoch+1)%5 == 0: #info shows every 5 epochs
+        if (epoch+1) % 5 == 0: 
             print(f"Epoch [{epoch+1}/{epochs}], Loss:  {total_loss/len(loader):.4f}")
 
-    torch.save(model.state_dict(), "checkpoint.pth")
+    os.makedirs("checkpoints", exist_ok=True)
+    torch.save(model.state_dict(), "checkpoints/best.pth")
+    print("[SUCCESS] Model file has been saved in directory /checkpoints")

@@ -4,6 +4,7 @@ import torch.optim as optim
 import os
 import json
 
+from torch.utils.data import random_split
 from torch.utils.data import Dataset, DataLoader
 
 LABEL_MAPPING = {"tuck": 0, "pike": 1, "split": 2, "straddle": 3}

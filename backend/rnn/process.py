@@ -5,7 +5,7 @@ from scipy.interpolate import interp1d
 
 FRAMES = 30 #cut up to 30 frames per video
 INPUT_DIR = "backend/hpe/dataset"
-OUTPUT_DIR = "rnn/data"
+OUTPUT_DIR = "backend/rnn/data"
 
 CATEGORIES = ["pike", "split", "straddle", "tuck"]
 
@@ -26,6 +26,8 @@ def interpolate_sequence(sequence, target_length=FRAMES): #json -> matrix -> new
     original_length = len(sequence)
     if original_length == 0:
         return []
+    elif original_length == target_length: #is already 30 frames
+        return sequence
 
     frame = sequence[0]
     flat_keys = []
@@ -102,23 +104,28 @@ def process_dataset():
     for category in CATEGORIES:
         input_path = os.path.join(INPUT_DIR, category) 
         output_path = os.path.join(OUTPUT_DIR, category)
-
-        if not os.path.exists(input_path):
-            continue
-            
         os.makedirs(output_path, exist_ok=True)
         
         files = [f for f in os.listdir(input_path) if f.endswith(".json")]
-        for file in files:
+        files.sort()
+        
+        total_originals = len(files)
+        
+        for i, file in enumerate(files):
             with open(os.path.join(input_path, file), "r") as f:
                 raw_sequence = json.load(f)
-            
             sequence = interpolate_sequence(raw_sequence)
             mirrored = mirror_sequence(sequence) 
+
+            with open(os.path.join(output_path, file), "w") as f:
+                json.dump(sequence, f)
+            mirror_index = total_originals + i + 1 #mirrored json start from last standard json (+1 as they start from 001)
+            mirror_filename = f"{mirror_index:03d}.json" 
             
-            filename = os.path.splitext(file)[0]
-            with open(os.path.join(output_path, f"{filename}.json"), "w") as f:
-                json.dump(sequence, f) 
-            with open(os.path.join(output_path, f"{filename}_mirror.json"), "w") as f:
+            with open(os.path.join(output_path, mirror_filename), "w") as f:
                 json.dump(mirrored, f)
+                
     print(f"[SUCCESS] The dataset has been processed")
+
+if __name__ == "__main__":
+    process_dataset()

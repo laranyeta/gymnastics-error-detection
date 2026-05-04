@@ -63,16 +63,13 @@ def mirror_sequence(sequence):
         new_frame = {"position": {}, "velocity": {}, "acceleration": {}, "angles": {}}
 
         for key in ["position", "velocity", "acceleration"]:
-            # CORRECCIÓ 1: Canviat 'mk' per 'key'
             for subkey, value in frame[key].items():
                 new_subkey = subkey
-                # CORRECCIÓ 2: Hem de fer el split al 'subkey' (ex: "x_11"), no al 'key' (ex: "position")
                 parts = subkey.split('_') 
                 if len(parts) == 2 and parts[1].isdigit():
                     idx = int(parts[1])
                     for idxL, idxR in KEYPOINT_SWAPPING:
                         if idx == idxL:
-                            # CORRECCIÓ 3: Guardar el canvi a 'new_subkey'
                             new_subkey = f"{parts[0]}_{idxR}" 
                             break
                         elif idx == idxR:

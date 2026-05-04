@@ -14,7 +14,7 @@ class RNNAcrobaticClassificator(nn.Module):
         super(RNNAcrobaticClassificator, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=n_layers, batch_first=True, dropout=0.2) #batch, seq_length, input_size
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=n_layers, batch_first=True, dropout=0.5) #batch, seq_length, input_size
         self.fc = nn.Linear(hidden_size, n_classes)
 
     def forward(self, x):
@@ -69,12 +69,12 @@ def train():
     
     input_size = 206 # 33 keypoints*2 (x,y) * 3 (x,v,a) + 8 ang
     hidden_size = 128
-    n_classes = len(LABEL_MAPPING) # 4
+    n_classes = len(LABEL_MAPPING) #4
     n_layers = 2
     epochs = 50
-    batch_size = 1 
+    batch_size = 4
 
-    dataset = GymnasticsDataset("data")
+    dataset = GymnasticsDataset("backend/rnn/data")
     train_size = int(0.8 * len(dataset)) #80% train
     val_size = len(dataset) - train_size #20% validation
 
@@ -118,12 +118,14 @@ def train():
                 total += y_val.size(0)
                 correct += (y_pred == y_val).sum().item()
 
-        if (epoch+1) % 5 == 0: 
-            train_loss_avg = total_loss / len(train_loader)
-            val_loss_avg = val_loss / len(val_loader)
-            accuracy = 100 * correct / total
-            print(f"Epoch [{epoch+1}/{epochs}] | Train Loss: {train_loss_avg:.4f} | Val Loss: {val_loss_avg:.4f} | Val Acc: {accuracy:.2f}%")
+        train_loss_avg = total_loss/len(train_loader)
+        val_loss_avg = val_loss/len(val_loader)
+        accuracy = 100 * correct/total
+        print(f"Epoch [{epoch+1}/{epochs}] | Train Loss: {train_loss_avg:.4f} | Val Loss: {val_loss_avg:.4f} | Val Acc: {accuracy:.2f}%")
 
-    os.makedirs("checkpoints", exist_ok=True)
-    torch.save(model.state_dict(), "checkpoints/best.pth")
+    os.makedirs("backend/rnn/checkpoints", exist_ok=True)
+    torch.save(model.state_dict(), "backend/rnn/checkpoints/best.pth")
     print("[SUCCESS] Model file has been saved in directory /checkpoints")
+
+if __name__ == "__main__":
+    train()

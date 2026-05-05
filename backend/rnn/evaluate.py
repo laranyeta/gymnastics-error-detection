@@ -52,7 +52,7 @@ def evaluate():
     plt.ylabel("True")
     plt.xlabel("Predict")
     
-    plt.savefig("metrics/model_confusion_matrix.png", bbox_inches='tight', dpi=300)
+   #plt.savefig("metrics/model_confusion_matrix.png", bbox_inches='tight', dpi=300)
     print(f"\n[SUCCESS] Confusion matrix has been saved in /metrics directory")
 
 if __name__ == "__main__":

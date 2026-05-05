@@ -1,5 +1,4 @@
 import torch
-import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -20,7 +19,6 @@ def evaluate():
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
     
-
     torch.manual_seed(42) 
     _, val_dataset = random_split(dataset, [train_size, val_size])
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)

@@ -1,5 +1,7 @@
 import torch
 import json
+import cv2
+import os
 
 from model import RNNAcrobaticClassificator, LABEL_MAPPING
 
@@ -18,7 +20,7 @@ def process_single_json(json_path):
     tensor = torch.tensor(frames, dtype=torch.float32)
     return tensor.unsqueeze(0) 
 
-def predict_video(json_path):
+def predict_video(json_path, skeleton_path, output_path):
     if torch.backends.mps.is_available():
         device = "mps"
     else:
@@ -47,6 +49,33 @@ def predict_video(json_path):
     for exercise, idx in LABEL_MAPPING.items():
         print(f"{exercise}: {probabilities[idx].item():.2f}%")
 
+    #classification information shown in video
+    cap = cv2.VideoCapture(skeleton_path)
+    
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    
+    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+    
+    text = f"Acrobatic: {final_prediction.upper()} | Conf: {confidence.item():.2f}%"
+    
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break     
+        cv2.putText(frame, text, (90, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 0), 3, cv2.LINE_AA)
+        out.write(frame)
+        
+    cap.release()
+    out.release()
+    print(f"[SUCCESS] Predicted video has been saved in rnn/test/outputs directory")
+
 if __name__ == "__main__":
-    test_path = "backend/rnn/test.json" 
-    predict_video(test_path)
+    json_path = "backend/rnn/test/test02.json" #raw spatial data
+    skeleton_path = "backend/rnn/test/test02_skeleton.avi" #raw spatial data into video frames (visual skeleton)
+
+    os.makedirs("backend/rnn/test/outputs", exist_ok=True)
+    output_path = "backend/rnn/test/outputs/test02_out.mov"
+    predict_video(json_path, skeleton_path, output_path)

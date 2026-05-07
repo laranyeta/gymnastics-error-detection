@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import os
 
-from model import LABEL_MAPPING, GymnasticsDataset, RNNAcrobaticClassificator
+from backend.rnn.model import LABEL_MAPPING, GymnasticsDataset, RNNAcrobaticClassificator
 from torch.utils.data import random_split
 from torch.utils.data import DataLoader
 

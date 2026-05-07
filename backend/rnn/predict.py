@@ -3,10 +3,10 @@ import json
 import cv2
 import os
 
-from model import RNNAcrobaticClassificator, LABEL_MAPPING
-from process import process_json
+from backend.rnn.model import RNNAcrobaticClassificator, LABEL_MAPPING
+from backend.rnn.process import process_json
 
-def predict(json_path, skeleton_path, output_path):
+def predict(json_path, skeleton_path=None, output_path=None, debug=False): #only fill skeleton_path and output_path in debug=true
     if torch.backends.mps.is_available():
         device = "mps"
     else:
@@ -26,38 +26,40 @@ def predict(json_path, skeleton_path, output_path):
         confidence, predicted_idx = torch.max(probabilities, 0) #max probability is best result
         
     class2text = {v: k for k, v in LABEL_MAPPING.items()} #0:tuck, 1:pike...
-    final_prediction = class2text[predicted_idx.item()]
-    
-    print(f"Detected acrobatic : {final_prediction.upper()}")
-    print(f"Confidence: {confidence.item():.2f}%")
-    print(f"-"*15)
-    print("Probability report")
-    for exercise, idx in LABEL_MAPPING.items():
-        print(f"{exercise}: {probabilities[idx].item():.2f}%")
+    pred = class2text[predicted_idx.item()]
 
-    #classification information shown in video
-    cap = cv2.VideoCapture(skeleton_path)
-    
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    
-    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-    
-    text = f"Acrobatic: {final_prediction.upper()} | Conf: {confidence.item():.2f}%"
-    
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break     
-        cv2.putText(frame, text, (90, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 0), 3, cv2.LINE_AA)
-        out.write(frame)
-        
-    cap.release()
-    out.release()
-    print(f"[SUCCESS] Predicted video has been saved in rnn/test/outputs directory")
-    
+    if debug == True: #classification information shown in video
+        print(f"Detected acrobatic : {pred.upper()}")
+        print(f"Confidence: {confidence.item():.2f}%")
+        print(f"-"*15)
+        print("Probability report")
+        for exercise, idx in LABEL_MAPPING.items():
+            print(f"{exercise}: {probabilities[idx].item():.2f}%")
+
+        opt = input("[INPUT] Do you want to save a output video? (y/-)")
+        if opt == "y":
+            cap = cv2.VideoCapture(skeleton_path)
+            
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            
+            out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+            text = f"Acrobatic: {pred.upper()} | Conf: {confidence.item():.2f}%"
+            
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break     
+                cv2.putText(frame, text, (90, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 0), 3, cv2.LINE_AA)
+                out.write(frame)
+                
+            cap.release()
+            out.release()
+            print(f"[SUCCESS] Predicted video has been saved in rnn/test/outputs directory")
+    return pred
+
 #testing purposes
 if __name__ == "__main__":
     json_path = "backend/rnn/test/test02.json" #raw spatial data
@@ -65,4 +67,4 @@ if __name__ == "__main__":
 
     os.makedirs("backend/rnn/test/outputs", exist_ok=True)
     output_path = "backend/rnn/test/outputs/test02_out.mov"
-    predict(json_path, skeleton_path, output_path)
+    _ = predict(json_path, skeleton_path, output_path)

@@ -4,7 +4,7 @@ import seaborn as sns
 
 from sklearn.metrics import confusion_matrix, classification_report
 from torch.utils.data import random_split, DataLoader
-from model import RNNAcrobaticClassificator, GymnasticsDataset, LABEL_MAPPING
+from backend.rnn.model import RNNAcrobaticClassificator, GymnasticsDataset, LABEL_MAPPING
 
 def evaluate():
     if torch.backends.mps.is_available():

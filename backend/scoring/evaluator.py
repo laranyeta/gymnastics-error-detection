@@ -1,6 +1,6 @@
 from backend.scoring import rules
 
-class GymnastEvaluator:
+class AcrobaticEvaluator:
     def __init__(self):
         self.deduction = rules.DEDUCTION
         self.thr = rules.THRESHOLDS_ANGLES
@@ -9,7 +9,7 @@ class GymnastEvaluator:
         e_score = rules.BASE_ESCORE - e_score_deductions
         return d_score + e_score
 
-    def evaluate_tuck(self, hip_angle, knee_angle, toe_distance, shoulder_width):
+    def eval_tuck(self, hip_angle, knee_angle, toe_distance, shoulder_width):
         penalty = 0.0
         lim = self.thr["tuck"]
 
@@ -37,7 +37,7 @@ class GymnastEvaluator:
 
         return penalty
 
-    def evaluate_pike(self, hip_angle, knee_angle, toe_distance, shoulder_width, toes_flexed):
+    def eval_pike(self, hip_angle, knee_angle, toe_distance, shoulder_width, toes_flexed):
         penalty = 0.0
         lim = self.thr["pike"]
         
@@ -67,7 +67,7 @@ class GymnastEvaluator:
 
         return penalty
 
-    def evaluate_split(self, opening_angle, knee_angle, toes_flexed):
+    def eval_split(self, opening_angle, knee_angle, toes_flexed):
         penalty = 0.0
         lim = self.thr["split"]
         
@@ -89,7 +89,7 @@ class GymnastEvaluator:
 
         return penalty
 
-    def evaluate_straddle(self, opening_angle, knee_angle):
+    def eval_straddle(self, opening_angle, knee_angle):
         penalty = 0.0
         lim = self.thr["straddle"]
         

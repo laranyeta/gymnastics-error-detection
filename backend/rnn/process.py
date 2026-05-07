@@ -1,3 +1,4 @@
+import torch
 import os
 import json
 import numpy as np
@@ -123,6 +124,21 @@ def process_dataset():
                 json.dump(mirrored, f)
                 
     print(f"[SUCCESS] The dataset has been processed")
+
+def process_json(json_path): #processes single json file
+    with open(json_path, 'r') as f:
+        sequence = json.load(f)
+    
+    frames = []
+    for frame in sequence:
+        x = list(frame.get("position", {}).values())
+        v = list(frame.get("velocity", {}).values())
+        a = list(frame.get("acceleration", {}).values())
+        ang = list(frame.get("angles", {}).values())
+        frames.append(x + v + a + ang)
+    
+    tensor = torch.tensor(frames, dtype=torch.float32)
+    return tensor.unsqueeze(0) 
 
 if __name__ == "__main__":
     process_dataset()

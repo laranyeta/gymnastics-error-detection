@@ -14,26 +14,27 @@ class GymnastEvaluator:
         lim = self.thr["tuck"]
 
         #angle bending
-        if hip_angle > lim["hip_minor"]:
-            penalty += self.deduction["MINOR"]
+        if hip_angle > lim["hip_severe"]:
+            penalty += self.deduction["SEVERE"]
         elif hip_angle > lim["hip_medium"]:
             penalty += self.deduction["MEDIUM"]
-        elif hip_angle > lim["hip_severe"]:
-            penalty += self.deduction["SEVERE"]
+        elif hip_angle > lim["hip_minor"]:
+            penalty += self.deduction["MINOR"]
 
         #knee bending
-        if knee_angle > lim["knee_minor"]:
-            penalty += self.deduction["MINOR"]
+        if knee_angle > lim["knee_severe"]:
+            penalty += self.deduction["SEVERE"]
         elif knee_angle > lim["knee_medium"]:
             penalty += self.deduction["MEDIUM"]
-        elif knee_angle > lim["knee_severe"]:
-            penalty += self.deduction["SEVERE"]
+        elif knee_angle > lim["knee_minor"]:
+            penalty += self.deduction["MINOR"]
 
         #toe distance
         if toe_distance > shoulder_width:
             penalty += self.deduction["MEDIUM"]
         elif toe_distance > 0 and toe_distance < shoulder_width:
             penalty += self.deduction["MINOR"]
+
         return penalty
 
     def evaluate_pike(self, hip_angle, knee_angle, toe_distance, shoulder_width, toes_flexed):
@@ -55,8 +56,7 @@ class GymnastEvaluator:
             penalty += self.deduction["MEDIUM"]
         elif knee_angle < lim["knee_minor"]:
             penalty += self.deduction["MINOR"]
-            
-        # Separació i peus
+        
         if toe_distance > shoulder_width:
             penalty += self.deduction["MEDIUM"]
         elif 0 < toe_distance <= shoulder_width:
@@ -64,7 +64,7 @@ class GymnastEvaluator:
             
         if toes_flexed:
             penalty += self.deduction["MINOR"]
-            
+
         return penalty
 
     def evaluate_split(self, opening_angle, knee_angle, toes_flexed):
@@ -72,20 +72,20 @@ class GymnastEvaluator:
         lim = self.thr["split"]
         
         #opening angle
-        if opening_angle < lim["opening_minor"]:
-            penalty += self.deduction["MINOR"]
+        if opening_angle < lim["opening_severe"]:
+            penalty += self.deduction["SEVERE"]
         elif opening_angle < lim["opening_medium"]:
             penalty += self.deduction["MEDIUM"]
-        elif opening_angle < lim["opening_severe"]:
-            penalty += self.deduction["SEVERE"]
+        elif opening_angle < lim["opening_minor"]:
+            penalty += self.deduction["MINOR"]
             
         #knee bending
-        if knee_angle < lim["knee_minor"]:
-            penalty += self.deduction["MINOR"]
+        if knee_angle < lim["knee_severe"]:
+            penalty += self.deduction["SEVERE"]
         elif knee_angle < lim["knee_medium"]:
             penalty += self.deduction["MEDIUM"]
-        elif knee_angle < lim["knee_severe"]:
-            penalty += self.deduction["SEVERE"]
+        elif knee_angle < lim["knee_minor"]:
+            penalty += self.deduction["MINOR"]
 
         return penalty
 
@@ -94,18 +94,19 @@ class GymnastEvaluator:
         lim = self.thr["straddle"]
         
         #opening angle
-        if opening_angle < lim["opening_minor"]:
-            penalty += self.deduction["MINOR"]
+        if opening_angle < lim["opening_severe"]:
+            penalty += self.deduction["SEVERE"]
         elif opening_angle < lim["opening_medium"]:
             penalty += self.deduction["MEDIUM"]
-        elif opening_angle < lim["opening_severe"]:
-            penalty += self.deduction["SEVERE"]
+        elif opening_angle < lim["opening_minor"]:
+            penalty += self.deduction["MINOR"]
             
         #knee bending
-        if knee_angle < lim["knee_minor"]:
-            penalty += self.deduction["MINOR"]
+        if knee_angle < lim["knee_severe"]:
+            penalty += self.deduction["SEVERE"]
         elif knee_angle < lim["knee_medium"]:
             penalty += self.deduction["MEDIUM"]
-        elif knee_angle < lim["knee_severe"]:
-            penalty += self.deduction["SEVERE"]
+        elif knee_angle < lim["knee_minor"]:
+            penalty += self.deduction["MINOR"]
+
         return penalty

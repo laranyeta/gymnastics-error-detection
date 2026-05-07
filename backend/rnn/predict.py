@@ -4,23 +4,9 @@ import cv2
 import os
 
 from model import RNNAcrobaticClassificator, LABEL_MAPPING
+from process import process_json
 
-def process_single_json(json_path):
-    with open(json_path, 'r') as f:
-        sequence = json.load(f)
-    
-    frames = []
-    for frame in sequence:
-        x = list(frame.get("position", {}).values())
-        v = list(frame.get("velocity", {}).values())
-        a = list(frame.get("acceleration", {}).values())
-        ang = list(frame.get("angles", {}).values())
-        frames.append(x + v + a + ang)
-    
-    tensor = torch.tensor(frames, dtype=torch.float32)
-    return tensor.unsqueeze(0) 
-
-def predict_video(json_path, skeleton_path, output_path):
+def predict(json_path, skeleton_path, output_path):
     if torch.backends.mps.is_available():
         device = "mps"
     else:
@@ -33,7 +19,7 @@ def predict_video(json_path, skeleton_path, output_path):
     model.to(device)
     model.eval()
     
-    input_tensor = process_single_json(json_path).to(device)
+    input_tensor = process_json(json_path).to(device)
     with torch.no_grad():
         outputs = model(input_tensor)
         probabilities = torch.nn.functional.softmax(outputs, dim=1)[0] * 100 #output to %
@@ -71,11 +57,12 @@ def predict_video(json_path, skeleton_path, output_path):
     cap.release()
     out.release()
     print(f"[SUCCESS] Predicted video has been saved in rnn/test/outputs directory")
-
+    
+#testing purposes
 if __name__ == "__main__":
     json_path = "backend/rnn/test/test02.json" #raw spatial data
     skeleton_path = "backend/rnn/test/test02_skeleton.avi" #raw spatial data into video frames (visual skeleton)
 
     os.makedirs("backend/rnn/test/outputs", exist_ok=True)
     output_path = "backend/rnn/test/outputs/test02_out.mov"
-    predict_video(json_path, skeleton_path, output_path)
+    predict(json_path, skeleton_path, output_path)

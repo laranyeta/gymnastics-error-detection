@@ -9,104 +9,158 @@ class AcrobaticEvaluator:
         e_score = rules.BASE_ESCORE - e_score_deductions
         return d_score + e_score
 
-    def eval_tuck(self, hip_angle, knee_angle, toe_distance, shoulder_width):
+    def eval_tuck(self, hip_angle, knee_L, knee_R):
         penalty = 0.0
+        breakdown = []
         lim = self.thr["tuck"]
 
         #angle bending
         if hip_angle > lim["hip_severe"]:
-            penalty += self.deduction["SEVERE"]
+            val = self.deduction["SEVERE"]
+            penalty += val
+            breakdown.append(f"Bent torso ({hip_angle:.1f}º) above {lim['hip_severe']}º - SEVERE (-{val})")
+
         elif hip_angle > lim["hip_medium"]:
-            penalty += self.deduction["MEDIUM"]
+            val = self.deduction["MEDIUM"]
+            penalty += val
+            breakdown.append(f"Bent torso ({hip_angle:.1f}º) above {lim['hip_medium']}º - MEDIUM (-{val})")
+
         elif hip_angle > lim["hip_minor"]:
-            penalty += self.deduction["MINOR"]
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Bent torso ({hip_angle:.1f}º) above {lim['hip_minor']}º - MINOR (-{val})")
 
         #knee bending
-        if knee_angle > lim["knee_severe"]:
-            penalty += self.deduction["SEVERE"]
-        elif knee_angle > lim["knee_medium"]:
-            penalty += self.deduction["MEDIUM"]
-        elif knee_angle > lim["knee_minor"]:
-            penalty += self.deduction["MINOR"]
+        worst_knee = min(knee_L, knee_R)
+        if worst_knee > lim["knee_severe"]:
+            val = self.deduction["SEVERE"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) above {lim['knee_severe']}º - SEVERE (-{val})")
 
-        #toe distance
-        if toe_distance > shoulder_width:
-            penalty += self.deduction["MEDIUM"]
-        elif toe_distance > 0 and toe_distance < shoulder_width:
-            penalty += self.deduction["MINOR"]
+        elif worst_knee > lim["knee_medium"]:
+            val = self.deduction["MEDIUM"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) above {lim['knee_medium']}º - MEDIUM (-{val})")
 
-        return penalty
+        elif worst_knee > lim["knee_minor"]:
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) above {lim['knee_minor']}º - MINOR (-{val})")
 
-    def eval_pike(self, hip_angle, knee_angle, toe_distance, shoulder_width, toes_flexed):
+        return penalty, breakdown
+
+    def eval_pike(self, hip_angle, knee_L, knee_R):
         penalty = 0.0
+        breakdown = []
         lim = self.thr["pike"]
         
         #hip bending
         if hip_angle > lim["hip_severe"]:
-            penalty += self.deduction["SEVERE"]
+            val = self.deduction["SEVERE"]
+            penalty += val
+            breakdown.append(f"Bent torso ({hip_angle:.1f}º) above {lim['hip_severe']}º - SEVERE (-{val})")
+
         elif hip_angle > lim["hip_medium"]:
-            penalty += self.deduction["MEDIUM"]
+            val = self.deduction["MEDIUM"]
+            penalty += val
+            breakdown.append(f"Bent torso ({hip_angle:.1f}º) above {lim['hip_medium']}º - MEDIUM (-{val})")
+
         elif hip_angle > lim["hip_minor"]:
-            penalty += self.deduction["MINOR"]
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Bent torso ({hip_angle:.1f}º) above {lim['hip_minor']}º - MINOR (-{val})")
             
         #knee bending
-        if knee_angle < lim["knee_severe"]:
-            penalty += self.deduction["SEVERE"]
-        elif knee_angle < lim["knee_medium"]:
-            penalty += self.deduction["MEDIUM"]
-        elif knee_angle < lim["knee_minor"]:
-            penalty += self.deduction["MINOR"]
-        
-        if toe_distance > shoulder_width:
-            penalty += self.deduction["MEDIUM"]
-        elif 0 < toe_distance <= shoulder_width:
-            penalty += self.deduction["MINOR"]
-            
-        if toes_flexed:
-            penalty += self.deduction["MINOR"]
+        worst_knee = min(knee_L, knee_R)
+        if worst_knee < lim["knee_severe"]:
+            val = self.deduction["SEVERE"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_severe']}º - SEVERE (-{val})")
 
-        return penalty
+        elif worst_knee < lim["knee_medium"]:
+            val = self.deduction["MEDIUM"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_medium']}º - MEDIUM (-{val})")
 
-    def eval_split(self, opening_angle, knee_angle, toes_flexed):
+        elif worst_knee < lim["knee_minor"]:
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_minor']}º - MINOR (-{val})")
+
+        return penalty, breakdown
+
+    def eval_split(self, opening_angle, knee_L, knee_R):
         penalty = 0.0
+        breakdown = []
         lim = self.thr["split"]
         
-        #opening angle
         if opening_angle < lim["opening_severe"]:
-            penalty += self.deduction["SEVERE"]
+            val = self.deduction["SEVERE"]
+            penalty += val
+            breakdown.append(f"Opening ({opening_angle:.1f}º) below {lim['opening_severe']}º - SEVERE (-{val})")
+
         elif opening_angle < lim["opening_medium"]:
-            penalty += self.deduction["MEDIUM"]
+            val = self.deduction["MEDIUM"]
+            penalty += val
+            breakdown.append(f"Opening ({opening_angle:.1f}º) below {lim['opening_medium']}º - MEDIUM (-{val})")
+
         elif opening_angle < lim["opening_minor"]:
-            penalty += self.deduction["MINOR"]
-            
-        #knee bending
-        if knee_angle < lim["knee_severe"]:
-            penalty += self.deduction["SEVERE"]
-        elif knee_angle < lim["knee_medium"]:
-            penalty += self.deduction["MEDIUM"]
-        elif knee_angle < lim["knee_minor"]:
-            penalty += self.deduction["MINOR"]
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Opening ({opening_angle:.1f}º) below {lim['opening_minor']}º - MINOR (-{val})")
+        
+        worst_knee = min(knee_L, knee_R)
+        if  worst_knee < lim["knee_severe"]:
+            val = self.deduction["SEVERE"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_severe']}º - SEVERE (-{val})")
 
-        return penalty
+        elif worst_knee < lim["knee_medium"]:
+            val = self.deduction["MEDIUM"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_medium']}º - MEDIUM (-{val})")
 
-    def eval_straddle(self, opening_angle, knee_angle):
+        elif worst_knee < lim["knee_minor"]:
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_minor']}º - MINOR (-{val})")
+
+        return penalty, breakdown
+
+    def eval_straddle(self, opening_angle, knee_L, knee_R):
         penalty = 0.0
+        breakdown = []
         lim = self.thr["straddle"]
         
-        #opening angle
         if opening_angle < lim["opening_severe"]:
-            penalty += self.deduction["SEVERE"]
-        elif opening_angle < lim["opening_medium"]:
-            penalty += self.deduction["MEDIUM"]
-        elif opening_angle < lim["opening_minor"]:
-            penalty += self.deduction["MINOR"]
-            
-        #knee bending
-        if knee_angle < lim["knee_severe"]:
-            penalty += self.deduction["SEVERE"]
-        elif knee_angle < lim["knee_medium"]:
-            penalty += self.deduction["MEDIUM"]
-        elif knee_angle < lim["knee_minor"]:
-            penalty += self.deduction["MINOR"]
+            val = self.deduction["SEVERE"]
+            penalty += val
+            breakdown.append(f"Opening ({opening_angle:.1f}º) below {lim['opening_severe']}º - SEVERE (-{val})")
 
-        return penalty
+        elif opening_angle < lim["opening_medium"]:
+            val = self.deduction["MEDIUM"]
+            penalty += val
+            breakdown.append(f"Opening ({opening_angle:.1f}º) below {lim['opening_medium']}º - MEDIUM (-{val})")
+
+        elif opening_angle < lim["opening_minor"]:
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Opening ({opening_angle:.1f}º) below {lim['opening_minor']}º - MINOR (-{val})")
+        
+        worst_knee = min(knee_L, knee_R)
+        if worst_knee < lim["knee_severe"]:
+            val = self.deduction["SEVERE"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_severe']}º - SEVERE (-{val})")
+
+        elif worst_knee < lim["knee_medium"]:
+            val = self.deduction["MEDIUM"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee}º) below {lim['knee_medium']}º - MEDIUM (-{val})")
+
+        elif worst_knee < lim["knee_minor"]:
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_minor']}º - MINOR (-{val})")
+            
+        return penalty, breakdown

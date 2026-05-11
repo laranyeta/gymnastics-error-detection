@@ -22,43 +22,46 @@ def evaluate_performance(json_path, pred):
     evaluator = AcrobaticEvaluator()
     
     #peak_idx, peak_frame = find_acrobatic_peak(sequence, pred)
-    angles = sequence[30].get("angles", {})
-    pos = sequence[30].get("position", {})
+    angles = sequence[40].get("angles", {})
     
     penalty = 0.0
     if pred == "tuck":
         hip_angle = (angles.get("joint_hip_L", 180) + angles.get("joint_hip_R", 180)) / 2
-        knee_angle = (angles.get("joint_knee_L", 180) + angles.get("joint_knee_R", 180)) / 2
-        toe_distance = 0.0 
-        shoulder_width = 1.0 
-        penalty = evaluator.eval_tuck(hip_angle, knee_angle, toe_distance, shoulder_width)
-        
+        knee_L = angles.get("joint_knee_L", 45)
+        knee_R = angles.get("joint_knee_R", 45)
+        penalty, breakdown = evaluator.eval_tuck(hip_angle, knee_L, knee_R)
+        print(f"Torso angle: {hip_angle:.2f}")
+        print(f"Knee L angle: {knee_L:.2f}")
+        print(f"Knee R angle: {knee_R:.2f}")
+
     elif pred == "pike":
         hip_angle = (angles.get("joint_hip_L", 180) + angles.get("joint_hip_R", 180)) / 2
-        knee_angle = (angles.get("joint_knee_L", 180) + angles.get("joint_knee_R", 180)) / 2
-        toe_distance = 0.0
-        shoulder_width = 1.0
-        toes_flexed = False
-        penalty = evaluator.eval_pike(hip_angle, knee_angle, toe_distance, shoulder_width, toes_flexed)
+        knee_L = angles.get("joint_knee_L", 180)
+        knee_R = angles.get("joint_knee_R", 180)
+        penalty, breakdown = evaluator.eval_pike(hip_angle, knee_L, knee_R)
+        print(f"Torso angle: {hip_angle:.2f}")
+        print(f"Knee L angle: {knee_L:.2f}")
+        print(f"Knee R angle: {knee_R:.2f}")
         
     elif pred == "split":
         opening_angle = angles.get("opening_R", 180)
-        knee_angle = min(angles.get("joint_knee_L", 180), angles.get("joint_knee_R", 180)) 
-        toes_flexed = False
-        print(f"\n[DEBUG] Read values: {30}:")
+        knee_L = angles.get("joint_knee_L", 180)
+        knee_R = angles.get("joint_knee_R", 180)
         print(f"Opening angle: {opening_angle:.2f}º")
-        print(f"Most flexed angles: {knee_angle:.2f}º")
-        penalty = evaluator.eval_split(opening_angle, knee_angle, toes_flexed)
+        print(f"Knee L angle: {knee_L:.2f}")
+        print(f"Knee R angle: {knee_R:.2f}")
+        penalty, breakdown = evaluator.eval_split(opening_angle, knee_L, knee_R)
         
     elif pred == "straddle":
         opening_angle = angles.get("opening_L", 180)
-        knee_angle = min(angles.get("joint_knee_L", 180), angles.get("joint_knee_R", 180))
-        print(f"\n[DEBUG] Read values: {30}:")
+        knee_L = angles.get("joint_knee_L", 180)
+        knee_R = angles.get("joint_knee_R", 180)
         print(f"Opening angle: {opening_angle:.2f}º")
-        print(f"Most flexed angle: {knee_angle:.2f}º")
-        penalty = evaluator.eval_straddle(opening_angle, knee_angle)
+        print(f"Knee L angle: {knee_L:.2f}")
+        print(f"Knee R angle: {knee_R:.2f}")
+        penalty, breakdown = evaluator.eval_straddle(opening_angle, knee_L, knee_R)
 
-    return penalty
+    return penalty, breakdown
 
 def visualize_peak_frame(video_path, frame_idx, output_img="peak_frame.jpg"):
     cap = cv2.VideoCapture(video_path)
@@ -81,14 +84,20 @@ if __name__ == "__main__":
 
     pred = predict(json_path, debug=False)
     
-    print("\n--- GYMNASTICS EVALUATION ---")
+    print("\n--- GYMNASTICS EVALUATION REPORT ---")
+    penalty, breakdown = evaluate_performance(json_path, pred)
     
-    penalty = evaluate_performance(json_path, pred)
     evaluator = AcrobaticEvaluator()
     final_score = evaluator.calculate_final_score(d_score, penalty)
-    
-    visualize_peak_frame("backend/rnn/test/test01_skeleton.avi", 30)
+    visualize_peak_frame("backend/rnn/test/test01_skeleton.avi", 40)
     print(f"Detected Acrobatic: {pred.upper()}")
-    print(f"Evaluated at Frame: 30")
-    print(f"Execution Deductions (E-Score): -{penalty:.1f}")
+    
+    print(f"\n--- DEDUCTION BREAKDOWN ---")
+    if len(breakdown) == 0:
+        print("Perfect execution. No deductions applied.")
+    else:
+        for reason in breakdown:
+            print(f"{reason}")
+            
+    print(f"\nTotal Execution Deductions (E-Score): -{penalty:.1f}")
     print(f"Final Score (D + E): {final_score:.1f}")

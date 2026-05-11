@@ -1,5 +1,6 @@
 import json
 import cv2
+import math
 
 from backend.scoring.evaluator import AcrobaticEvaluator
 from backend.rnn.predict import predict
@@ -15,14 +16,38 @@ from backend.rnn.predict import predict
         
     return idx, peak_frame'''
 
-def evaluate_performance(json_path, pred):
+def calculate_split_angle(pos): #calculates the real angle by making an imaginary keypoint for extra vectorial angle calculation
+    hip_L_x, hip_L_y = pos.get("x_23", 0), pos.get("y_23", 0)
+    hip_R_x, hip_R_y = pos.get("x_24", 0), pos.get("y_24", 0)
+
+    knee_L_x, knee_L_y = pos.get("x_25", 0), pos.get("y_25", 0)
+    knee_R_x, knee_R_y = pos.get("x_26", 0), pos.get("y_26", 0)
+
+    hip_middle_x = (hip_L_x + hip_R_x) / 2
+    hip_middle_y = (hip_L_y + hip_R_y) / 2
+
+    vector_L = (knee_L_x - hip_middle_x, knee_L_y - hip_middle_y)
+    vector_R = (knee_R_x - hip_middle_x, knee_R_y - hip_middle_y)
+
+    dot_prod = (vector_L[0]*vector_R[0]) + (vector_L[1]*vector_R[1]) #u*v (dot product)
+    magnitude_L = math.sqrt(pow(vector_L[0], 2) + pow(vector_L[1], 2)) #|u|
+    magnitude_R = math.sqrt(pow(vector_R[0], 2) + pow(vector_R[1], 2)) #|v|
+    
+    if magnitude_L*magnitude_R == 0:
+        print("[ERROR] Division by 0 not calculable.")
+    cos_theta = dot_prod/(magnitude_L*magnitude_R) #u*v/|u||v|
+    cos_theta = max(min(cos_theta, 1.0), -1.0) #limited to range -1 to 1
+
+    return (math.degrees(math.acos(cos_theta))) #radians -> degrees
+
+def evaluate_performance(json_path, pred, frame_idx):
     with open(json_path, 'r') as f:
         sequence = json.load(f)
         
     evaluator = AcrobaticEvaluator()
-    
     #peak_idx, peak_frame = find_acrobatic_peak(sequence, pred)
-    angles = sequence[40].get("angles", {})
+    angles = sequence[frame_idx].get("angles", {})
+    pos = sequence[frame_idx].get("position", {})
     
     penalty = 0.0
     if pred == "tuck":
@@ -44,7 +69,7 @@ def evaluate_performance(json_path, pred):
         print(f"Knee R angle: {knee_R:.2f}")
         
     elif pred == "split":
-        opening_angle = angles.get("opening_R", 180)
+        opening_angle = calculate_split_angle(pos)
         knee_L = angles.get("joint_knee_L", 180)
         knee_R = angles.get("joint_knee_R", 180)
         print(f"Opening angle: {opening_angle:.2f}º")
@@ -53,7 +78,7 @@ def evaluate_performance(json_path, pred):
         penalty, breakdown = evaluator.eval_split(opening_angle, knee_L, knee_R)
         
     elif pred == "straddle":
-        opening_angle = angles.get("opening_L", 180)
+        opening_angle = angles.get("opening_L", 180) #not sure if needed in straddle
         knee_L = angles.get("joint_knee_L", 180)
         knee_R = angles.get("joint_knee_R", 180)
         print(f"Opening angle: {opening_angle:.2f}º")
@@ -79,17 +104,18 @@ def visualize_peak_frame(video_path, frame_idx, output_img="peak_frame.jpg"):
 
 #testing purposes
 if __name__ == "__main__":
-    json_path = "backend/rnn/test/test01.json"
+    json_path = "backend/rnn/test/test02.json"
     d_score = 5.0 #hardcoded, d-score is not automatized
+    frame = 40
 
     pred = predict(json_path, debug=False)
     
     print("\n--- GYMNASTICS EVALUATION REPORT ---")
-    penalty, breakdown = evaluate_performance(json_path, pred)
+    penalty, breakdown = evaluate_performance(json_path, pred, frame)
     
     evaluator = AcrobaticEvaluator()
     final_score = evaluator.calculate_final_score(d_score, penalty)
-    visualize_peak_frame("backend/rnn/test/test01_skeleton.avi", 40)
+    visualize_peak_frame("backend/rnn/test/test02_skeleton.avi", frame)
     print(f"Detected Acrobatic: {pred.upper()}")
     
     print(f"\n--- DEDUCTION BREAKDOWN ---")

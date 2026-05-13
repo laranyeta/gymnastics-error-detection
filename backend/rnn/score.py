@@ -32,8 +32,25 @@ def calculate_split_angle(pos): #calculates the real angle by making an imaginar
 def find_acrobatic_peak(sequence, pred):
     if pred in ["split", "straddle"]:
         idx, peak_frame = max(enumerate(sequence), key=lambda x: calculate_split_angle(x[1].get("position", {})))
-    elif pred in ["tuck", "pike"]:
-        idx, peak_frame = min(enumerate(sequence), key=lambda x: x[1]["angles"].get("joint_hip_L", 180)) 
+    elif pred == "tuck":
+        idx, peak_frame = min(
+            enumerate(sequence), 
+            key=lambda x: (
+                x[1].get("angles", {}).get("joint_hip_L", 45) + 
+                x[1].get("angles", {}).get("joint_knee_L", 45) + 
+                x[1].get("angles", {}).get("joint_knee_R", 45)
+            )
+        )
+    elif pred == "pike":
+        idx, peak_frame = min(
+            enumerate(sequence), 
+            key=lambda x: (
+                x[1].get("angles", {}).get("joint_hip_L", 180) - 
+                x[1].get("angles", {}).get("joint_knee_L", 180) - 
+                x[1].get("angles", {}).get("joint_knee_R", 180)
+            )
+        )
+
     else:
         idx = len(sequence) // 2
         peak_frame = sequence[idx] 
@@ -54,37 +71,53 @@ def evaluate_performance(json_path, pred):
         hip_angle = (angles.get("joint_hip_L", 180) + angles.get("joint_hip_R", 180)) / 2
         knee_L = angles.get("joint_knee_L", 45)
         knee_R = angles.get("joint_knee_R", 45)
-        penalty, breakdown = evaluator.eval_tuck(hip_angle, knee_L, knee_R)
+        ankle_L = angles.get("joint_ankle_L", 180)
+        ankle_R = angles.get("joint_ankle_R", 180)
+        penalty, breakdown = evaluator.eval_tuck(hip_angle, knee_L, knee_R, ankle_L, ankle_R)
         print(f"Torso angle: {hip_angle:.2f}")
         print(f"Knee L angle: {knee_L:.2f}")
         print(f"Knee R angle: {knee_R:.2f}")
+        print(f"Ankle L angle: {ankle_L:.2f}")
+        print(f"Ankle R angle: {ankle_R:.2f}")
 
     elif pred == "pike":
         hip_angle = (angles.get("joint_hip_L", 180) + angles.get("joint_hip_R", 180)) / 2
         knee_L = angles.get("joint_knee_L", 180)
         knee_R = angles.get("joint_knee_R", 180)
-        penalty, breakdown = evaluator.eval_pike(hip_angle, knee_L, knee_R)
+        ankle_L = angles.get("joint_ankle_L", 180)
+        ankle_R = angles.get("joint_ankle_R", 180)
+        penalty, breakdown = evaluator.eval_pike(hip_angle, knee_L, knee_R, ankle_L, ankle_R)
         print(f"Torso angle: {hip_angle:.2f}")
         print(f"Knee L angle: {knee_L:.2f}")
         print(f"Knee R angle: {knee_R:.2f}")
+        print(f"Ankle L angle: {ankle_L:.2f}")
+        print(f"Ankle R angle: {ankle_R:.2f}")
         
     elif pred == "split":
         opening_angle = calculate_split_angle(pos)
         knee_L = angles.get("joint_knee_L", 180)
         knee_R = angles.get("joint_knee_R", 180)
+        ankle_L = angles.get("joint_ankle_L", 180)
+        ankle_R = angles.get("joint_ankle_R", 180)
         print(f"Opening angle: {opening_angle:.2f}º")
         print(f"Knee L angle: {knee_L:.2f}")
         print(f"Knee R angle: {knee_R:.2f}")
-        penalty, breakdown = evaluator.eval_split(opening_angle, knee_L, knee_R)
+        print(f"Ankle L angle: {ankle_L:.2f}")
+        print(f"Ankle R angle: {ankle_R:.2f}")
+        penalty, breakdown = evaluator.eval_split(opening_angle, knee_L, knee_R, ankle_L, ankle_R)
         
     elif pred == "straddle":
         opening_angle = angles.get("opening_L", 180) #not sure if needed in straddle
         knee_L = angles.get("joint_knee_L", 180)
         knee_R = angles.get("joint_knee_R", 180)
+        ankle_L = angles.get("joint_ankle_L", 180)
+        ankle_R = angles.get("joint_ankle_R", 180)
         print(f"Opening angle: {opening_angle:.2f}º")
         print(f"Knee L angle: {knee_L:.2f}")
         print(f"Knee R angle: {knee_R:.2f}")
-        penalty, breakdown = evaluator.eval_straddle(opening_angle, knee_L, knee_R)
+        print(f"Ankle L angle: {ankle_L:.2f}")
+        print(f"Ankle R angle: {ankle_R:.2f}")
+        penalty, breakdown = evaluator.eval_straddle(opening_angle, knee_L, knee_R, ankle_L, ankle_R)
 
     return penalty, breakdown, peak_idx
 
@@ -104,7 +137,7 @@ def visualize_peak_frame(video_path, peak_frame):
 
 #testing purposes
 if __name__ == "__main__":
-    json_path = "backend/rnn/test/test02.json"
+    json_path = "backend/rnn/test/test06.json"
     d_score = 5.0 #hardcoded, d-score is not automatized
 
     pred = predict(json_path, debug=False)
@@ -114,7 +147,7 @@ if __name__ == "__main__":
     
     evaluator = AcrobaticEvaluator()
     final_score = evaluator.calculate_final_score(d_score, penalty)
-    visualize_peak_frame("backend/rnn/test/test02_skeleton.avi", peak_idx)
+    visualize_peak_frame("backend/rnn/test/test06_skeleton.avi", peak_idx)
     print(f"Detected Acrobatic: {pred.upper()}")
     
     print(f"\n--- DEDUCTION BREAKDOWN ---")

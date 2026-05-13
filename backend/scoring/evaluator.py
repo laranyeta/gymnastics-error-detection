@@ -9,7 +9,7 @@ class AcrobaticEvaluator:
         e_score = rules.BASE_ESCORE - e_score_deductions
         return d_score + e_score
 
-    def eval_tuck(self, hip_angle, knee_L, knee_R):
+    def eval_tuck(self, hip_angle, knee_L, knee_R, ankle_L, ankle_R):
         penalty = 0.0
         breakdown = []
         lim = self.thr["tuck"]
@@ -47,9 +47,15 @@ class AcrobaticEvaluator:
             penalty += val
             breakdown.append(f"Bent knee ({worst_knee:.1f}º) above {lim['knee_minor']}º - MINOR (-{val})")
 
+        #toe
+        worst_ankle = min(ankle_L, ankle_R)
+        if worst_ankle < lim["toe"]:
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Bent ankle ({worst_ankle:.1f}º) above {lim['toe']}º - MINOR (-{val})")
         return penalty, breakdown
 
-    def eval_pike(self, hip_angle, knee_L, knee_R):
+    def eval_pike(self, hip_angle, knee_L, knee_R, ankle_L, ankle_R):
         penalty = 0.0
         breakdown = []
         lim = self.thr["pike"]
@@ -87,9 +93,15 @@ class AcrobaticEvaluator:
             penalty += val
             breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_minor']}º - MINOR (-{val})")
 
+        #toe
+        worst_ankle = min(ankle_L, ankle_R)
+        if worst_ankle < lim["toe"]:
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Bent ankle ({worst_ankle:.1f}º) above {lim['toe']}º - MINOR (-{val})")
         return penalty, breakdown
 
-    def eval_split(self, opening_angle, knee_L, knee_R):
+    def eval_split(self, opening_angle, knee_L, knee_R, ankle_L, ankle_R):
         penalty = 0.0
         breakdown = []
         lim = self.thr["split"]
@@ -125,9 +137,15 @@ class AcrobaticEvaluator:
             penalty += val
             breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_minor']}º - MINOR (-{val})")
 
+        #toe
+        worst_ankle = min(ankle_L, ankle_R)
+        if worst_ankle < lim["toe"]:
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Bent ankle ({worst_ankle:.1f}º) above {lim['toe']}º - MINOR (-{val})")
         return penalty, breakdown
 
-    def eval_straddle(self, opening_angle, knee_L, knee_R):
+    def eval_straddle(self, opening_angle, knee_L, knee_R, ankle_L, ankle_R):
         penalty = 0.0
         breakdown = []
         lim = self.thr["straddle"]
@@ -162,5 +180,11 @@ class AcrobaticEvaluator:
             val = self.deduction["MINOR"]
             penalty += val
             breakdown.append(f"Bent knee ({worst_knee:.1f}º) below {lim['knee_minor']}º - MINOR (-{val})")
-            
+        
+        #toe
+        worst_ankle = min(ankle_L, ankle_R)
+        if worst_ankle < lim["toe"]:
+            val = self.deduction["MINOR"]
+            penalty += val
+            breakdown.append(f"Bent ankle ({worst_ankle:.1f}º) above {lim['toe']}º - MINOR (-{val})")
         return penalty, breakdown

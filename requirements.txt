@@ -1,0 +1,10 @@
+-r backend/hpe/pose/requirements.txt
+
+opencv-python
+scipy
+scikit-learn==1.8
+pandas==3.0.1
+seaborn==0.13.2
+torch==2.10.0
+torchvision==0.25.0
+PyQt6

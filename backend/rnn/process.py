@@ -125,10 +125,7 @@ def process_dataset():
                 
     print(f"[SUCCESS] The dataset has been processed")
 
-def process_json(json_path): #processes single json file
-    with open(json_path, 'r') as f:
-        sequence = json.load(f)
-    
+def process_sequence(sequence):
     frames = []
     for frame in sequence:
         x = list(frame.get("position", {}).values())
@@ -136,9 +133,13 @@ def process_json(json_path): #processes single json file
         a = list(frame.get("acceleration", {}).values())
         ang = list(frame.get("angles", {}).values())
         frames.append(x + v + a + ang)
-    
     tensor = torch.tensor(frames, dtype=torch.float32)
     return tensor.unsqueeze(0) 
+
+def process_json(json_path):
+    with open(json_path, 'r') as f:
+        sequence = json.load(f)
+    return process_sequence(sequence)
 
 if __name__ == "__main__":
     process_dataset()

@@ -6,6 +6,12 @@ DEDUCTION = { #penalty applied to E-Score
     "SEVERE": 0.5   
 }
 
+COLOR_MAP = { #deductions color mapping
+    "MINOR": (0,255,0), #green
+    "MEDIUM": (0, 165, 255), #orange
+    "SEVERE": (0,0,255) #red
+}
+
 THRESHOLDS_ANGLES = { #angle thresholds for each acrobatic
     "tuck": { #evaluates both knee and hip bending
         "hip_minor": 65, #45 would be perfect

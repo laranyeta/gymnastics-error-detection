@@ -10,7 +10,7 @@ os.chdir(current_dir)
 
 #importing the following libraries once in directory /pose
 from utils.data import coco2mediapipe, calculate_joint_angle
-from utils.vision import interpolation_smoothing, draw_skeleton
+from utils.vision import CONNECTIONS, interpolation_smoothing, draw_skeleton
 from mmpretrain.models.backbones.vision_transformer import VisionTransformer
 from mmpose.apis import inference_topdown, init_model
 
@@ -90,7 +90,7 @@ fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter(os.path.join(OUTPUT_FOLDER, f"{filename}.avi"), fourcc, fps, (width, height))
 
 for i, frame in enumerate(frames):
-    pose_estimation = draw_skeleton(frame.copy(), smoothed_coords[i])
+    pose_estimation = draw_skeleton(frame.copy(), smoothed_coords[i], CONNECTIONS)
     out.write(pose_estimation)
     
 out.release()

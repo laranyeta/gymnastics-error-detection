@@ -1,9 +1,12 @@
 import json
 import cv2
 import math
+import numpy as np
 
+from backend.hpe.pose.utils.vision import CONNECTIONS
 from backend.scoring.evaluator import AcrobaticEvaluator
-from backend.rnn.predict import predict
+from backend.scoring.rules import COLOR_MAP
+from backend.rnn.predict import load_prediction_model, predict_window 
 
 def calculate_split_angle(pos): #calculates the real angle by making an imaginary keypoint for extra vectorial angle calculation
     hip_L_x, hip_L_y = pos.get("x_23", 0), pos.get("y_23", 0)
@@ -52,15 +55,12 @@ def find_acrobatic_peak(sequence, pred):
         )
 
     else:
-        idx = len(sequence) // 2
+        idx = len(sequence)//2
         peak_frame = sequence[idx] 
         
     return idx, peak_frame
 
-def evaluate_performance(json_path, pred):
-    with open(json_path, 'r') as f:
-        sequence = json.load(f)
-        
+def evaluate_performance(sequence, pred): #evaluates only one acrobatic
     evaluator = AcrobaticEvaluator()
     peak_idx, _ = find_acrobatic_peak(sequence, pred)
     angles = sequence[peak_idx].get("angles", {})
@@ -69,16 +69,11 @@ def evaluate_performance(json_path, pred):
     penalty = 0.0
     if pred == "tuck":
         hip_angle = (angles.get("joint_hip_L", 180) + angles.get("joint_hip_R", 180)) / 2
-        knee_L = angles.get("joint_knee_L", 45)
-        knee_R = angles.get("joint_knee_R", 45)
+        knee_L = angles.get("joint_knee_L", 180)
+        knee_R = angles.get("joint_knee_R", 180)
         ankle_L = angles.get("joint_ankle_L", 180)
         ankle_R = angles.get("joint_ankle_R", 180)
         penalty, breakdown = evaluator.eval_tuck(hip_angle, knee_L, knee_R, ankle_L, ankle_R)
-        print(f"Torso angle: {hip_angle:.2f}")
-        print(f"Knee L angle: {knee_L:.2f}")
-        print(f"Knee R angle: {knee_R:.2f}")
-        print(f"Ankle L angle: {ankle_L:.2f}")
-        print(f"Ankle R angle: {ankle_R:.2f}")
 
     elif pred == "pike":
         hip_angle = (angles.get("joint_hip_L", 180) + angles.get("joint_hip_R", 180)) / 2
@@ -87,11 +82,6 @@ def evaluate_performance(json_path, pred):
         ankle_L = angles.get("joint_ankle_L", 180)
         ankle_R = angles.get("joint_ankle_R", 180)
         penalty, breakdown = evaluator.eval_pike(hip_angle, knee_L, knee_R, ankle_L, ankle_R)
-        print(f"Torso angle: {hip_angle:.2f}")
-        print(f"Knee L angle: {knee_L:.2f}")
-        print(f"Knee R angle: {knee_R:.2f}")
-        print(f"Ankle L angle: {ankle_L:.2f}")
-        print(f"Ankle R angle: {ankle_R:.2f}")
         
     elif pred == "split":
         opening_angle = calculate_split_angle(pos)
@@ -99,63 +89,175 @@ def evaluate_performance(json_path, pred):
         knee_R = angles.get("joint_knee_R", 180)
         ankle_L = angles.get("joint_ankle_L", 180)
         ankle_R = angles.get("joint_ankle_R", 180)
-        print(f"Opening angle: {opening_angle:.2f}º")
-        print(f"Knee L angle: {knee_L:.2f}")
-        print(f"Knee R angle: {knee_R:.2f}")
-        print(f"Ankle L angle: {ankle_L:.2f}")
-        print(f"Ankle R angle: {ankle_R:.2f}")
         penalty, breakdown = evaluator.eval_split(opening_angle, knee_L, knee_R, ankle_L, ankle_R)
         
     elif pred == "straddle":
-        opening_angle = angles.get("opening_L", 180) #not sure if needed in straddle
+        opening_angle = calculate_split_angle(pos) #vectorial
         knee_L = angles.get("joint_knee_L", 180)
         knee_R = angles.get("joint_knee_R", 180)
         ankle_L = angles.get("joint_ankle_L", 180)
         ankle_R = angles.get("joint_ankle_R", 180)
-        print(f"Opening angle: {opening_angle:.2f}º")
-        print(f"Knee L angle: {knee_L:.2f}")
-        print(f"Knee R angle: {knee_R:.2f}")
-        print(f"Ankle L angle: {ankle_L:.2f}")
-        print(f"Ankle R angle: {ankle_R:.2f}")
         penalty, breakdown = evaluator.eval_straddle(opening_angle, knee_L, knee_R, ankle_L, ankle_R)
 
     return penalty, breakdown, peak_idx
 
-def visualize_peak_frame(video_path, peak_frame):
+def evaluate_routine(json_path, window=40, step=15): #evaluates more than one acrobatic (sliding window)
+    with open(json_path, "r") as f:
+        sequence = json.load(f) #full sequence
+
+    model, device = load_prediction_model() 
+    total_frames = len(sequence)
+    results = []
+    last_pred = None #last prediction of the model
+
+    for start in range(0, total_frames - window+1, step):
+        end = start + window
+        window_seq = sequence[start:end]
+        pred, conf = predict_window(model, device, window_seq)
+    
+        if pred != "none" and conf > 50 and pred != last_pred:
+            penalty, breakdown, local_peak = evaluate_performance(window_seq, pred)
+            global_peak = start + local_peak
+            results.append({
+                "acrobatic": pred,
+                "global_peak": global_peak,
+                "penalty": penalty,
+                "breakdown": breakdown,
+                "confidence": conf,
+                "angles": sequence[global_peak].get("angles", {}), #to draw the skeleton
+                "position": sequence[global_peak].get("position", {})
+            })
+            last_pred = pred
+        elif pred == "none":
+            last_pred = None 
+            
+    return results
+
+def color_joint_deduction(COLOR_MAP, breakdown):
+    colors = {}
+    for reason in breakdown:
+        if "MINOR" in reason: 
+            c = COLOR_MAP["MINOR"]
+        elif "MEDIUM" in reason: 
+            c = COLOR_MAP["MEDIUM"]
+        elif "SEVERE" in reason: 
+            c = COLOR_MAP["SEVERE"]
+        else: 
+            continue
+
+        if "Opening" in reason: #Opening (16.8º) below 135º - SEVERE (-0.5) -> example
+            colors["opening_L"], colors["opening_R"] = c, c
+        if "torso" in reason: #Bent torso (88.8º) above 65º - MINOR (-0.1) -> example
+            colors["torso_L"], colors["torso_R"], colors["pelvis"] = c, c, c
+        if "knee" in reason: #Bent knee (68.0º) above 65º - MINOR (-0.1) -> example
+            colors["upperleg_L"], colors["lowerleg_L"] = c, c
+            colors["upperleg_R"], colors["lowerleg_R"] = c, c
+        if "ankle" in reason: #Bent ankle (41.3º) above 160º - MINOR (-0.1) -> example
+            colors["toe_L"], colors["toe_R"] = c, c      
+    return colors
+
+def visualize_peak_frame(video_path, peak_frame, angles, pos, breakdown):
     cap = cv2.VideoCapture(video_path)
     cap.set(cv2.CAP_PROP_POS_FRAMES, peak_frame)
-    
-    ret, frame = cap.read()
-    if ret:
-        cv2.imshow(f"Peak Frame - Index: {peak_frame}", frame)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    else:
-        print("\n[ERROR] Video has not been read.")
-        
+    ret, original_frame = cap.read()
     cap.release()
+    
+    canvas_size = 800
+    skeleton_canvas = np.zeros((canvas_size, canvas_size, 3), dtype=np.uint8)
+
+    VIEW_RANGE = 3.0
+    def get_pt(idx):
+        x_val = float(pos.get(f"x_{idx}", 0))
+        y_val = float(pos.get(f"y_{idx}", 0))
+        px = int((x_val + VIEW_RANGE) / (VIEW_RANGE * 2) * canvas_size)
+        py = int((y_val + VIEW_RANGE) / (VIEW_RANGE * 2) * canvas_size)
+        return (px, py)
+
+    for start_idx, end_idx in CONNECTIONS:
+        pt1 = get_pt(start_idx)
+        pt2 = get_pt(end_idx)
+        cv2.line(skeleton_canvas, pt1, pt2, (255, 255, 255), 2)
+        cv2.circle(skeleton_canvas, pt1, 4, (255, 255, 255), -1)
+        cv2.circle(skeleton_canvas, pt2, 4, (255, 255, 255), -1)
+
+    x_11, x_12 = get_pt(11), get_pt(12) #shoulders
+    x_23, x_24 = get_pt(23), get_pt(24) #hips
+    x_25, x_26 = get_pt(25), get_pt(26) #knee
+    x_27, x_28 = get_pt(27), get_pt(28) #ankle
+    x_31, x_32 = get_pt(31), get_pt(32) #toe
+    x_i = (int((x_23[0] + x_24[0]) / 2), int((x_23[1] + x_24[1]) / 2)) #x_i -> x_23.5 (imaginary mid keypoint for opening calculation)
+
+    colors = color_joint_deduction(COLOR_MAP, breakdown)
+
+    if "torso_L" in colors:
+        cv2.line(skeleton_canvas, x_11, x_23, colors["torso_L"], 6)
+        cv2.line(skeleton_canvas, x_12, x_24, colors["torso_R"], 6)
+        cv2.line(skeleton_canvas, x_23, x_24, colors["pelvis"], 6)  
+
+    if "opening_L" in colors:
+        cv2.line(skeleton_canvas, x_i, x_25, colors["opening_L"], 6) 
+        cv2.line(skeleton_canvas, x_i, x_26, colors["opening_R"], 6) 
+        cv2.circle(skeleton_canvas, x_i, 8, colors["opening_L"], -1)
+
+    if "upperleg_L" in colors:
+        cv2.line(skeleton_canvas, x_23, x_25, colors["upperleg_L"], 6)
+        cv2.line(skeleton_canvas, x_24, x_26, colors["upperleg_R"], 6)
+        cv2.circle(skeleton_canvas, x_25, 8, colors["upperleg_L"], -1)
+        cv2.circle(skeleton_canvas, x_26, 8, colors["upperleg_R"], -1)
+
+    if "lowerleg_L" in colors:
+        cv2.line(skeleton_canvas, x_25, x_27, colors["lowerleg_L"], 6)
+        cv2.line(skeleton_canvas, x_26, x_28, colors["lowerleg_R"], 6)
+
+    if "toe_L" in colors:
+        cv2.line(skeleton_canvas, x_27, x_31, colors["toe_L"], 6)
+        cv2.line(skeleton_canvas, x_28, x_32, colors["toe_R"], 6)
+        cv2.circle(skeleton_canvas, x_27, 8, colors["toe_L"], -1)
+        cv2.circle(skeleton_canvas, x_28, 8, colors["toe_R"], -1)
+
+    if ret:
+        orig_h, orig_w = original_frame.shape[:2]
+        scale = canvas_size/orig_h
+        resized_orig = cv2.resize(original_frame, (int(orig_w*scale), canvas_size))
+        
+        combined_view = np.hstack((resized_orig, skeleton_canvas))
+        cv2.imshow(f"AI Judge UI - Peak Frame: {peak_frame}", combined_view) #json raw skeleton
+    else:
+        cv2.imshow(f"Virtual Skeleton - Peak Frame: {peak_frame}", skeleton_canvas) #skeleton drawn in canvas
+    cv2.waitKey(0) 
+    cv2.destroyAllWindows()
 
 #testing purposes
 if __name__ == "__main__":
-    json_path = "backend/rnn/test/test06.json"
-    d_score = 5.0 #hardcoded, d-score is not automatized
+    json_path = "backend/rnn/test/test08.json"
+    video_path = "backend/rnn/test/test08_skeleton.avi"
+    d_score = 5.0 
+    total_penalty = 0.0
 
-    pred = predict(json_path, debug=False)
-    
     print("\n--- GYMNASTICS EVALUATION REPORT ---")
-    penalty, breakdown, peak_idx = evaluate_performance(json_path, pred)
-    
-    evaluator = AcrobaticEvaluator()
-    final_score = evaluator.calculate_final_score(d_score, penalty)
-    visualize_peak_frame("backend/rnn/test/test06_skeleton.avi", peak_idx)
-    print(f"Detected Acrobatic: {pred.upper()}")
-    
-    print(f"\n--- DEDUCTION BREAKDOWN ---")
-    if len(breakdown) == 0:
-        print("Perfect execution. No deductions applied.")
+    results = evaluate_routine(json_path, window=40, step=20)
+
+    if not results:
+        print("No acrobatics detected.")
+        exit()
     else:
-        for reason in breakdown:
-            print(f"{reason}")
+        for item in results:
+            print(f"\nDetected Acrobatic: {item['acrobatic'].upper()} ({item['confidence']:.2f}%)")
+            print(f"Peak frame: {item['global_peak']}")
             
-    print(f"\nTotal Execution Deductions (E-Score): -{penalty:.1f}")
+            if len(item['breakdown']) == 0:
+                print("Perfect execution. No deductions applied.")
+            else:
+                print("\n-DEDUCTIONS-")
+                for reason in item['breakdown']:
+                        print(f"{reason}")
+
+            total_penalty += item['penalty']
+            visualize_peak_frame(video_path, item['global_peak'], item['angles'], item['position'], item['breakdown'])
+
+    evaluator = AcrobaticEvaluator()
+    final_score = evaluator.calculate_final_score(d_score, total_penalty)
+
+    print("\n-FINAL SCORE-")
+    print(f"Total deductions applied: -{total_penalty:.1f}")
     print(f"Final Score (D + E): {final_score:.1f}")

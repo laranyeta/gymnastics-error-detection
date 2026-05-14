@@ -5,6 +5,12 @@ import pandas as pd
 from sklearn.impute import KNNImputer
 from scipy.signal import savgol_filter
 
+CONNECTIONS = [
+        (11, 12), (11, 13), (13, 15), (12, 14), (14, 16), #shoulders and arms
+        (11, 23), (12, 24), (23, 24), # torso and hips           
+        (23, 25), (25, 27), (24, 26), (26, 28), #legs
+        (27, 31), (28, 32), #ankle
+    ]
 
 def normalize_pose_tensor(df):
     neck_x, neck_y = (df['x_11'] + df['x_12'])/2, (df['y_11'] + df['y_12'])/2
@@ -65,16 +71,10 @@ def interpolation_smoothing(frames):
             
     return fixed_draw, rnn_data
 
-def draw_skeleton(frame, fixed_coords):
+def draw_skeleton(frame, fixed_coords, connections):
     h, w = frame.shape[:2]
-    CONNECTIONS = [
-        (11, 12), (11, 13), (13, 15), (12, 14), (14, 16), #shoulders and arms
-        (11, 23), (12, 24), (23, 24), # torso and hips           
-        (23, 25), (25, 27), (24, 26), (26, 28), #legs
-        (27, 31), (28, 32), #ankle
-    ]
 
-    for start_idx, end_idx in CONNECTIONS:
+    for start_idx, end_idx in connections:
         x1 = fixed_coords.get(f"x_{start_idx}")
         y1 = fixed_coords.get(f"y_{start_idx}")
         x2 = fixed_coords.get(f"x_{end_idx}")

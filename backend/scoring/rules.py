@@ -20,7 +20,7 @@ THRESHOLDS_ANGLES = { #angle thresholds for each acrobatic
         "knee_minor": 65, #45 would be perfect
         "knee_medium": 90,
         "knee_severe": 100,
-        "toe": 160
+        "toe": 130
     },
     "pike": { #evaluates knee straightness and hip bending
         "hip_minor": 65, #45 would be perfect
@@ -29,7 +29,7 @@ THRESHOLDS_ANGLES = { #angle thresholds for each acrobatic
         "knee_minor": 170, #180 would be perfect
         "knee_medium": 160,
         "knee_severe": 145,
-        "toe": 160
+        "toe": 130
     },
     "split": { #evaluates leg opening and knee straightness
         "opening_minor": 170, #180 would be perfect
@@ -38,7 +38,7 @@ THRESHOLDS_ANGLES = { #angle thresholds for each acrobatic
         "knee_minor": 170, #180 would be perfect
         "knee_medium": 160,
         "knee_severe": 145,
-        "toe": 160
+        "toe": 130
     },
     "straddle": { #same as split but has both upturned ankles (split has one downturned ankle)
         "opening_minor": 170, #180 would be perfect
@@ -47,6 +47,6 @@ THRESHOLDS_ANGLES = { #angle thresholds for each acrobatic
         "knee_minor": 170, #180 would be perfect
         "knee_medium": 160,
         "knee_severe": 145,
-        "toe": 160
+        "toe": 130
     }
 }

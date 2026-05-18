@@ -239,8 +239,8 @@ def visualize_peak_frame(video_path, peak_frame, pos, breakdown, pred, conf):
 
 #testing purposes
 if __name__ == "__main__":
-    json_path = "backend/rnn/test/test01.json"
-    video_path = "backend/rnn/test/test01_skeleton.avi"
+    json_path = "backend/rnn/test/test08.json"
+    video_path = "backend/rnn/test/test08_skeleton.avi"
     d_score = 5.0 
     total_penalty = 0.0
 

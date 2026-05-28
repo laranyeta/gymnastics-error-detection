@@ -1,12 +1,9 @@
 <h2 align="center">
   <br>
     <img width="1280" height="320" alt="banner" src="https://github.com/user-attachments/assets/2997131d-db53-418c-a8d2-741263ee8f52">
-  <br>
-    Automatic System of Gymnastics Error Detection using <i>Deep Learning</i>
-  <br>
 </h2>
 
-<h4 align="center"><i>Turning pixels into precision:</i> Democratizing elite gymnastics judging with Computer Vision</h4>
+<h3 align="center"><i>Turning pixels into precision:</i> Democratizing elite gymnastics judging with Computer Vision</h4>
 
 ---
 

@@ -1,4 +1,5 @@
 import copy
+import json
 from backend.scoring.rules import BASE_ESCORE
 from backend.rnn.score import evaluate_routine
 
@@ -9,9 +10,14 @@ class AppLogic:
         self.error_frames_list = []
         self.undo_stack = []
         self.redo_stack = []
+        self.raw_data = [] #to print skeleton in frames without errors
 
     def load_json_data(self, filename):
+        with open(filename, 'r') as f:
+            self.raw_data = json.load(f)
+
         results = evaluate_routine(filename, window=40, step=20)
+        
         self.undo_stack.clear()
         self.redo_stack.clear()
         self.e_score = BASE_ESCORE

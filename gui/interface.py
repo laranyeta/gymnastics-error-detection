@@ -1,3 +1,4 @@
+import os
 import cv2
 import gui.style as css
 
@@ -50,7 +51,7 @@ class MainApp(QMainWindow):
         main_layout.setContentsMargins(15, 15, 15, 15)
         main_layout.setSpacing(15) #space between columns
 
-        #left
+        #left container
         left_container = QWidget()
         left_container.setStyleSheet(css.LEFT_COL_STYLE)
         col_L = QVBoxLayout(left_container)
@@ -116,24 +117,17 @@ class MainApp(QMainWindow):
         col_L.addWidget(self.video, stretch=4)
         col_L.addLayout(controls_layout)
         
-        # --- CONTENIDOR DRETA ---
-        right_container = QWidget()
-        right_container.setStyleSheet(css.RIGHT_COL_STYLE)
-        col_R = QVBoxLayout(right_container)
+        #right container
+        self.right_container = QWidget()
+        self.right_container.setStyleSheet(css.RIGHT_COL_STYLE)
+        col_R = QVBoxLayout(self.right_container)
         
         logs_header_layout = QHBoxLayout()
         self.lbl_logs_title = QLabel("<b>Deductions Logs</b>")
         self.lbl_logs_title.setStyleSheet(css.TITLE_STYLE)
         
-        self.btn_undo = QPushButton("Undo")
-        self.btn_undo.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_undo.setFixedWidth(70)
-        self.btn_undo.clicked.connect(self.undo_action)
-        
-        self.btn_redo = QPushButton("Redo")
-        self.btn_redo.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_redo.setFixedWidth(70)
-        self.btn_redo.clicked.connect(self.redo_action)
+        self.btn_undo = create_icon_button("gui/assets/undo.png", self.undo_action)
+        self.btn_redo = create_icon_button("gui/assets/redo.png", self.redo_action)
         
         logs_header_layout.addWidget(self.lbl_logs_title)
         logs_header_layout.addStretch()
@@ -178,7 +172,7 @@ class MainApp(QMainWindow):
         col_R.addWidget(self.score)
 
         main_layout.addWidget(left_container, stretch=5)
-        main_layout.addWidget(right_container, stretch=5)
+        main_layout.addWidget(self.right_container, stretch=5)
 
         self.lbl_acrobatic_info.hide()
         self.lbl_confidence_info.hide()
@@ -194,7 +188,7 @@ class MainApp(QMainWindow):
         self.btn_mode_skeleton.setChecked(mode == "Skeleton")
         self.refresh_display()
 
-    # --- CÀRREGA DE FITXERS ---
+    #load video + searches for json in same directory
     def load_video(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Select video", "", "videos (*.mp4 *.avi)")
         if filename:
@@ -203,18 +197,49 @@ class MainApp(QMainWindow):
             self.frame_slider.setMaximum(int(self.video_cap.get(cv2.CAP_PROP_FRAME_COUNT)) - 1)
             self.frame_slider.setEnabled(True)
             self.btn_play_pause.setEnabled(True)
-            self.load_json_action.setEnabled(True) 
             self.set_frame_position(0)
             
-    def load_json(self):
+            dir_name = os.path.dirname(filename)
+            base_name = os.path.basename(filename)
+            
+            name_without_ext = os.path.splitext(base_name)[0]
+            if name_without_ext.endswith("_skeleton"): #test01_skeleton.mp4 -> test01.json
+                name_without_ext = name_without_ext.replace("_skeleton", "") #deletes _skeleton from filename
+                
+            json_filename = os.path.join(dir_name, f"{name_without_ext}.json")
+            if os.path.exists(json_filename):
+                try:
+                    total_errors = self.logic.load_json_data(json_filename)
+                    self.update_gui_after_action()
+                
+                    self.lbl_logs_title.show()
+                    self.btn_undo.show()
+                    self.btn_redo.show()
+                    self.lbl_acrobatic_info.show()
+                    self.lbl_confidence_info.show()
+                    self.btn_reject_all.show()
+                    
+                    if total_errors > 0:
+                        self.btn_prev_err.setEnabled(True)
+                        self.btn_next_err.setEnabled(True)
+                        self.set_frame_position(self.logic.error_frames_list[0])
+                        
+                    self.load_json_action.setEnabled(False)
+                    
+                except Exception as e:
+                    QMessageBox.critical(self, "Error", f"[ERROR] Failed to auto-load {json_filename}:\n{str(e)}")
+                    self.load_json_action.setEnabled(True)
+            else:
+                QMessageBox.information(self, "Info", f"[WARNING] Video was loaded  but couldn't find the associated data file ({name_without_ext}.json).\n\nYou can load it manually via 'File > Load Data'.")
+                self.load_json_action.setEnabled(True)
+            
+    def load_json(self): #load json manually in case it wasn't auto-loaded
         filename, _ = QFileDialog.getOpenFileName(self, "Select JSON", "", "JSON (*.json)")
         if filename:
             try:
-                # El cervell fa la feina
                 total_errors = self.logic.load_json_data(filename)
                 self.update_gui_after_action()
                 
-                # Despertem la UI
                 self.lbl_logs_title.show()
                 self.btn_undo.show()
                 self.btn_redo.show()
@@ -252,14 +277,23 @@ class MainApp(QMainWindow):
 
     #playback
     def toggle_playback(self):
+        self.is_playing = not self.is_playing
+        
         if self.is_playing:
-            self.timer.stop()
-            self.btn_play_pause.setIcon(QIcon("gui/assets/play.png"))
-        else:
+            total_frames = int(self.video_cap.get(cv2.CAP_PROP_FRAME_COUNT)) #check if we are at the end of the video, if so start from the beginning
+            if self.current_frame >= total_frames - 1:
+                self.set_frame_position(0)
+
             fps = self.video_cap.get(cv2.CAP_PROP_FPS) or 30
             self.timer.start(int(1000 / fps))
-            self.btn_play_pause.setIcon(QIcon("gui/assets/pause.png"))
-        self.is_playing = not self.is_playing
+            self.btn_play_pause.setIcon(QIcon("gui/assets/pause.png")) #show pause icon
+            self.right_container.hide() #only shows video when playing
+            
+        else:
+            self.timer.stop()
+            self.btn_play_pause.setIcon(QIcon("gui/assets/play.png")) #show play icon
+            self.right_container.show() #show logs when paused
+            self.update_log_for_current_frame()
 
     def next_frame(self):
         if not self.video_cap: return
@@ -309,7 +343,7 @@ class MainApp(QMainWindow):
 
             if data["acrobatic"] == "Transition":
                 self.btn_reject_all.setEnabled(False)
-                self.lbl_acrobatic_info.setText("<b>Detected Acrobatic:</b>TRANSITION")
+                self.lbl_acrobatic_info.setText("<b>Detected Acrobatic:</b> TRANSITION")
             else:
                 self.btn_reject_all.setEnabled(True)
                 self.lbl_acrobatic_info.setText(f"<b>Detected Acrobatic:</b> {data['acrobatic'].upper()}")
@@ -334,12 +368,21 @@ class MainApp(QMainWindow):
         self.log_layout.addStretch()
 
     def display_frame(self, frame, frame_idx):
-        if self.current_view_mode == "Skeleton" and frame_idx in self.logic.errors_by_frame:
-            data = self.logic.errors_by_frame[frame_idx]
-            active_breakdowns = [r["text"] for r in data["reasons"] if r["status"] != "rejected"]
-            is_false_pos = (data["acrobatic"] == "Transition")
-            display_img = generate_skeleton_canvas(data["position"], active_breakdowns, is_false_pos)
-        else:
+        if self.current_view_mode == "Skeleton": #skeleton mode
+            if frame_idx in self.logic.errors_by_frame: #frame with error -> paint skeleton with deductions highlighted
+                data = self.logic.errors_by_frame[frame_idx]
+                active_breakdowns = [r["text"] for r in data["reasons"] if r["status"] != "rejected"]
+                is_false_pos = (data["acrobatic"] == "Transition")
+                display_img = generate_skeleton_canvas(data["position"], active_breakdowns, is_false_pos)
+            
+            else: #frame without error -> paint skeleton without deductions
+                try:
+                    raw_frame_data = self.logic.raw_data[frame_idx] 
+                    position = raw_frame_data["position"]
+                    display_img = generate_skeleton_canvas(position, [], False)
+                except Exception:
+                    display_img = frame
+        else: #video mode
             display_img = frame
             
         img = cv2.cvtColor(display_img, cv2.COLOR_BGR2RGB)

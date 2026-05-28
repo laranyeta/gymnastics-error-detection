@@ -5,9 +5,7 @@
 
 <h3 align="center"><i>Turning pixels into precision:</i> Democratizing elite gymnastics judging with Computer Vision</h4>
 
----
-
-<h6 align="center"> <i>Bachelor's Thesis (TFG) - Universitat Autònoma de Barcelona (UAB)</i></h6>
+<h4 align="center"> <i>Bachelor's Thesis (TFG) - Universitat Autònoma de Barcelona (UAB)</i></h6>
 <p align="center">
   <img src="https://img.shields.io/badge/uab-tfg-blue?style=for-the-badge" alt="uab tfg">
 

@@ -101,7 +101,7 @@ def evaluate_performance(sequence, pred): #evaluates only one acrobatic
 
     return penalty, breakdown, peak_idx
 
-def evaluate_routine(json_path, window=40, step=15): #evaluates more than one acrobatic (sliding window)
+def evaluate_routine(json_path, window=40, step=20): #evaluates more than one acrobatic (sliding window)
     with open(json_path, "r") as f:
         sequence = json.load(f) #full sequence
 
@@ -156,36 +156,33 @@ def color_joint_deduction(COLOR_MAP, breakdown):
             colors["toe_L"], colors["toe_R"] = c, c      
     return colors
 
-def visualize_peak_frame(video_path, peak_frame, pos, breakdown, pred, conf):
-    cap = cv2.VideoCapture(video_path)
-    cap.set(cv2.CAP_PROP_POS_FRAMES, peak_frame)
-    ret, original_frame = cap.read()
-    cap.release()
-    
-    canvas_size = 800
-    skeleton_canvas = np.zeros((canvas_size, canvas_size, 3), dtype=np.uint8)
+def generate_skeleton_canvas(pos, breakdown, is_false_positive=False, canvas_size=640):
+    canvas = np.zeros((canvas_size, canvas_size, 3), dtype=np.uint8)
 
     VIEW_RANGE = 3.0
     def get_pt(idx):
         x_val = float(pos.get(f"x_{idx}", 0))
         y_val = float(pos.get(f"y_{idx}", 0))
-        px = int((x_val + VIEW_RANGE) / (VIEW_RANGE * 2) * canvas_size)
-        py = int((y_val + VIEW_RANGE) / (VIEW_RANGE * 2) * canvas_size)
+        px = int((x_val+VIEW_RANGE)/(VIEW_RANGE*2)*canvas_size)
+        py = int((y_val+VIEW_RANGE)/(VIEW_RANGE*2)*canvas_size)
         return (px, py)
     
     for start_idx, end_idx in CONNECTIONS:
         pt1 = get_pt(start_idx)
         pt2 = get_pt(end_idx)
-        cv2.line(skeleton_canvas, pt1, pt2, (255, 255, 255), 2)
-        cv2.circle(skeleton_canvas, pt1, 4, (255, 255, 255), -1)
-        cv2.circle(skeleton_canvas, pt2, 4, (255, 255, 255), -1)
+        cv2.line(canvas, pt1, pt2, (255, 255, 255), 2)
+        cv2.circle(canvas, pt1, 4, (255, 255, 255), -1)
+        cv2.circle(canvas, pt2, 4, (255, 255, 255), -1)
+
+    if is_false_positive: #blank canvas for false positives (no deductions)
+        return canvas
 
     x_11, x_12 = get_pt(11), get_pt(12) 
     x_23, x_24 = get_pt(23), get_pt(24) 
     x_25, x_26 = get_pt(25), get_pt(26) 
     x_27, x_28 = get_pt(27), get_pt(28) 
     x_31, x_32 = get_pt(31), get_pt(32) 
-    x_i = (int((x_23[0] + x_24[0]) / 2), int((x_23[1] + x_24[1]) / 2)) 
+    x_i = (int((x_23[0]+x_24[0])/2), int((x_23[1]+x_24[1])/2)) #virtual pelvis keypoint 
 
     colors = color_joint_deduction(COLOR_MAP, breakdown)
 
@@ -193,81 +190,38 @@ def visualize_peak_frame(video_path, peak_frame, pos, breakdown, pred, conf):
         target_color = COLOR_MAP[level]
 
         if "torso_L" in colors and colors["torso_L"] == target_color:
-            cv2.line(skeleton_canvas, x_11, x_23, target_color, 6)
-            cv2.line(skeleton_canvas, x_12, x_24, target_color, 6)
-            cv2.line(skeleton_canvas, x_23, x_24, target_color, 6)
+            cv2.line(canvas, x_11, x_23, target_color, 3)
+            cv2.line(canvas, x_12, x_24, target_color, 3)
+            cv2.line(canvas, x_23, x_24, target_color, 3)
 
         if "opening_L" in colors and colors["opening_L"] == target_color:
-            cv2.line(skeleton_canvas, x_i, x_25, target_color, 6) 
-            cv2.line(skeleton_canvas, x_i, x_26, target_color, 6) 
-            cv2.circle(skeleton_canvas, x_i, 8, target_color, -1)
+            cv2.line(canvas, x_i, x_25, target_color, 3) 
+            cv2.line(canvas, x_i, x_26, target_color, 3) 
+            cv2.circle(canvas, x_i, 5, target_color, -1)
 
         if "upperleg_L" in colors and colors["upperleg_L"] == target_color:
-            cv2.line(skeleton_canvas, x_23, x_25, target_color, 6)
-            cv2.line(skeleton_canvas, x_24, x_26, target_color, 6)
-            cv2.circle(skeleton_canvas, x_25, 8, target_color, -1)
-            cv2.circle(skeleton_canvas, x_26, 8, target_color, -1)
+            cv2.line(canvas, x_23, x_25, target_color, 3)
+            cv2.line(canvas, x_24, x_26, target_color, 3)
+            cv2.circle(canvas, x_25, 5, target_color, -1)
+            cv2.circle(canvas, x_26, 5, target_color, -1)
 
         if "lowerleg_L" in colors and colors["lowerleg_L"] == target_color:
-            cv2.line(skeleton_canvas, x_25, x_27, target_color, 6)
-            cv2.line(skeleton_canvas, x_26, x_28, target_color, 6)
+            cv2.line(canvas, x_25, x_27, target_color, 3)
+            cv2.line(canvas, x_26, x_28, target_color, 3)
 
         if "toe_L" in colors and colors["toe_L"] == target_color:
-            cv2.line(skeleton_canvas, x_27, x_31, target_color, 6)
-            cv2.line(skeleton_canvas, x_28, x_32, target_color, 6)
-            cv2.circle(skeleton_canvas, x_27, 8, target_color, -1)
-            cv2.circle(skeleton_canvas, x_28, 8, target_color, -1)
+            cv2.line(canvas, x_27, x_31, target_color, 3)
+            cv2.line(canvas, x_28, x_32, target_color, 3)
+            cv2.circle(canvas, x_27, 5, target_color, -1)
+            cv2.circle(canvas, x_28, 5, target_color, -1)
 
-    text_pred = f"Acrobatic: {pred.upper()}"
-    text_conf = f"Confidence: {conf:.2f}%"
-    
-    cv2.putText(skeleton_canvas, text_pred, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.85, (255, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(skeleton_canvas, text_conf, (30, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 1, cv2.LINE_AA)
+    return canvas
 
-    if ret:
-        orig_h, orig_w = original_frame.shape[:2]
-        scale = canvas_size/orig_h
-        resized_orig = cv2.resize(original_frame, (int(orig_w*scale), canvas_size))
-        
-        combined_view = np.hstack((resized_orig, skeleton_canvas))
-        cv2.imshow(f"AI Judge UI - Peak Frame: {peak_frame}", combined_view) 
-    else:
-        cv2.imshow(f"Virtual Skeleton - Peak Frame: {peak_frame}", skeleton_canvas) 
-    
-    cv2.waitKey(0) 
-    cv2.destroyAllWindows()
-
-#testing purposes
 if __name__ == "__main__":
-    json_path = "backend/rnn/test/test08.json"
-    video_path = "backend/rnn/test/test08_skeleton.avi"
-    d_score = 5.0 
-    total_penalty = 0.0
-
-    print("\n--- GYMNASTICS EVALUATION REPORT ---")
-    results = evaluate_routine(json_path, window=40, step=20)
-
-    if not results:
-        print("No acrobatics detected.")
-        exit()
-    else:
-        for item in results:
-            print(f"\nDetected Acrobatic: {item['acrobatic'].upper()} ({item['confidence']:.2f}%)")
-            print(f"Peak frame: {item['global_peak']}")
-            
-            if len(item['breakdown']) == 0:
-                print("Perfect execution. No deductions applied.")
-            else:
-                print("\n-DEDUCTIONS-")
-                for reason in item['breakdown']:
-                        print(f"{reason}")
-
-            total_penalty += item['penalty']
-            visualize_peak_frame(video_path, item['global_peak'], item['position'], item['breakdown'], item['acrobatic'], item['confidence'])
-
-    evaluator = AcrobaticEvaluator()
-    final_score = evaluator.calculate_final_score(d_score, total_penalty)
-
-    print("\n-FINAL SCORE-")
-    print(f"Total deductions applied: -{total_penalty:.1f}")
-    print(f"Final Score (D + E): {final_score:.1f}")
+    results = evaluate_routine("backend/rnn/test/test08.json", window=40, step=20)
+    for res in results:
+        print(f"Acrobatic: {res['acrobatic']}, Confidence: {res['confidence']}, Penalty: {res['penalty']}, Breakdown: {res['breakdown']}")
+        canvas = generate_skeleton_canvas(res['position'], res['breakdown'])
+        cv2.imshow("Skeleton Canvas", canvas)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()

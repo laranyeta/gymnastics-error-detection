@@ -36,8 +36,14 @@ def find_acrobatic_peak(sequence, pred):
     if pred in ["split", "straddle"]:
         idx, peak_frame = max(enumerate(sequence), key=lambda x: calculate_split_angle(x[1].get("position", {})))
     elif pred == "tuck":
+        #filter for realistic frames (joints over 20 degrees)
+        valid_frames = []
+        for i, frame in enumerate(sequence):
+            angles = frame.get("angles", {})
+            if angles.get("joint_hip_L", 0) > 20 and angles.get("joint_knee_L", 0) > 20 and angles.get("joint_knee_R", 0) > 20 and angles.get("joint_ankle_L", 0) > 20 and angles.get("joint_ankle_R", 0) > 20:
+                valid_frames.append((i, frame)) #tuple list
         idx, peak_frame = min(
-            enumerate(sequence), 
+            valid_frames, 
             key=lambda x: (
                 x[1].get("angles", {}).get("joint_hip_L", 45) + 
                 x[1].get("angles", {}).get("joint_knee_L", 45) + 
@@ -45,10 +51,15 @@ def find_acrobatic_peak(sequence, pred):
             )
         )
     elif pred == "pike":
+        valid_frames = []
+        for i, frame in enumerate(sequence):
+            angles = frame.get("angles", {})
+            if angles.get("joint_hip_L", 0) > 20 and angles.get("joint_knee_L", 0) > 20 and angles.get("joint_knee_R", 0) > 20 and angles.get("joint_ankle_L", 0) > 20 and angles.get("joint_ankle_R", 0) > 20:
+                valid_frames.append((i, frame))
         idx, peak_frame = min(
-            enumerate(sequence), 
+            valid_frames,
             key=lambda x: (
-                x[1].get("angles", {}).get("joint_hip_L", 180) - 
+                x[1].get("angles", {}).get("joint_hip_L", 45) - 
                 x[1].get("angles", {}).get("joint_knee_L", 180) - 
                 x[1].get("angles", {}).get("joint_knee_R", 180)
             )
@@ -190,9 +201,9 @@ def generate_skeleton_canvas(pos, breakdown, is_false_positive=False, canvas_siz
         target_color = COLOR_MAP[level]
 
         if "torso_L" in colors and colors["torso_L"] == target_color:
-            cv2.line(canvas, x_11, x_23, target_color, 3)
             cv2.line(canvas, x_12, x_24, target_color, 3)
-            cv2.line(canvas, x_23, x_24, target_color, 3)
+            cv2.line(canvas, x_24, x_26, target_color, 3)
+            cv2.circle(canvas, x_24, 5, target_color, -1)
 
         if "opening_L" in colors and colors["opening_L"] == target_color:
             cv2.line(canvas, x_i, x_25, target_color, 3) 

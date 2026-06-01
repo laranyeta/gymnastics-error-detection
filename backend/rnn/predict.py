@@ -1,7 +1,5 @@
 import torch
-import cv2
 import os
-import json
 
 from backend.rnn.model import RNNAcrobaticClassificator, LABEL_MAPPING
 from backend.rnn.process import process_sequence
@@ -35,24 +33,3 @@ def predict(model, device, window_sequence):
     class2text = {v: k for k, v in LABEL_MAPPING.items()}
     pred = class2text[predicted_idx.item()]
     return pred, confidence.item()
-
-def save_predicted_video(input_path, output_path, pred, conf):
-    cap = cv2.VideoCapture(input_path)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    
-    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-    text = f"Acrobatic: {pred.upper()} | Conf: {conf:.2f}%"
-    
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break     
-        cv2.putText(frame, text, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2, cv2.LINE_AA)
-        out.write(frame)
-        
-    cap.release()
-    out.release()
-    print(f"[SUCCESS] Output video has been saved in directory {output_path}")

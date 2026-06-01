@@ -8,7 +8,7 @@ from backend.scoring.evaluator import AcrobaticEvaluator
 from backend.scoring.rules import COLOR_MAP
 from backend.rnn.predict import load_prediction_model, predict
 
-def denormalize_point(x_val, y_val, view_range=3.0, canvas_size=640): 
+def denormalize_point(x_val, y_val, view_range=3.0, canvas_size=640): #denormalizes point from normalized coordinates by torso placement
     px = int((float(x_val)+view_range)/(view_range*2)*canvas_size)
     py = int((float(y_val)+view_range)/(view_range*2)*canvas_size)
     return px, py
@@ -18,7 +18,7 @@ def get_pt(idx, pos, VIEW_RANGE=3.0, canvas_size=640):
     y_val = float(pos.get(f"y_{idx}", 0))
     return denormalize_point(x_val, y_val, VIEW_RANGE, canvas_size)
 
-def get_ankle_displacement(frame_A, frame_B, view_range=3.0, canvas_size=640): #denormalizes point from normalized coordinates by torso placement
+def get_ankle_displacement(frame_A, frame_B, view_range=3.0, canvas_size=640): #euclidean distance of ankle between two frames (less distance->on ground, more distance->on air)
     pos_A = frame_A.get("position", {})
     pos_B = frame_B.get("position", {})
     
@@ -58,7 +58,7 @@ def calculate_split_angle(pos): #calculates the real angle by making an imaginar
 
     return (math.degrees(math.acos(cos_theta))) #radians -> degrees
 
-def find_acrobatic_peak(sequence, pred):
+def find_acrobatic_peak(sequence, pred): #finds peak based on predicted acrobatic (split -> max opening, tuck-> min hip-knee angle, pike -> min hip angle/max knee angle)
     if pred in ["split", "straddle"]:
         idx, peak_frame = max(enumerate(sequence), key=lambda x: calculate_split_angle(x[1].get("position", {})))
     elif pred == "tuck":
@@ -90,14 +90,12 @@ def find_acrobatic_peak(sequence, pred):
                 x[1].get("angles", {}).get("joint_knee_R", 180)
             )
         )
-
     else:
         idx = len(sequence)//2
         peak_frame = sequence[idx] 
-        
     return idx, peak_frame
 
-def find_acrobatic_window(sequence, peak_idx, thr=3.0):
+def find_acrobatic_window(sequence, peak_idx, thr=3.0): #finds start and end frames of acrobatic (ankle displacement)
     start_idx = peak_idx
     end_idx = peak_idx
 
@@ -112,7 +110,6 @@ def find_acrobatic_window(sequence, peak_idx, thr=3.0):
         if d < thr: 
             end_idx = i
             break
-            
     return start_idx, end_idx
 
 def evaluate_performance(sequence, pred): #evaluates only one acrobatic
@@ -177,7 +174,6 @@ def evaluate_routine(json_path, window=40, step=20): #evaluates more than one ac
 
             #print(f"\nAcrobatic: {pred.upper()} (Peak Global: Frame {global_peak})")
             start_acro, end_acro = find_acrobatic_window(sequence, global_peak, thr=3.0)
-            
             results.append({
                 "acrobatic": pred,
                 "global_peak": global_peak,
@@ -197,7 +193,7 @@ def evaluate_routine(json_path, window=40, step=20): #evaluates more than one ac
             start += step
     return results
 
-def color_joint_deduction(COLOR_MAP, breakdown):
+def color_joint_deduction(COLOR_MAP, breakdown): #assigns color depending on penalty type (minor->green, medium->yellow, severe->red)
     colors = {}
     for reason in breakdown:
         if "MINOR" in reason: 
@@ -220,7 +216,7 @@ def color_joint_deduction(COLOR_MAP, breakdown):
             colors["toe_L"], colors["toe_R"] = c, c      
     return colors
 
-def generate_skeleton_canvas(pos, breakdown, is_false_positive=False, canvas_size=640):
+def generate_skeleton_canvas(pos, breakdown, is_false_positive=False, canvas_size=640): #skeleton canvas with colored deductions for visual aid
     canvas = np.zeros((canvas_size, canvas_size, 3), dtype=np.uint8)
     VIEW_RANGE = 3.0
     for start_idx, end_idx in CONNECTIONS:
@@ -241,7 +237,6 @@ def generate_skeleton_canvas(pos, breakdown, is_false_positive=False, canvas_siz
     x_i = (int((x_23[0]+x_24[0])/2), int((x_23[1]+x_24[1])/2)) #virtual pelvis keypoint 
 
     colors = color_joint_deduction(COLOR_MAP, breakdown)
-
     for level in ["MINOR", "MEDIUM", "SEVERE"]:
         target_color = COLOR_MAP[level]
 
@@ -270,14 +265,4 @@ def generate_skeleton_canvas(pos, breakdown, is_false_positive=False, canvas_siz
             cv2.line(canvas, x_28, x_32, target_color, 3)
             cv2.circle(canvas, x_27, 5, target_color, -1)
             cv2.circle(canvas, x_28, 5, target_color, -1)
-
     return canvas
-
-if __name__ == "__main__":
-    results = evaluate_routine("backend/rnn/test/demo.json", window=40, step=20)
-    for res in results:
-        print(f"Acrobatic: {res['acrobatic']}, Confidence: {res['confidence']}, Penalty: {res['penalty']}, Breakdown: {res['breakdown']}")
-        canvas = generate_skeleton_canvas(res['position'], res['breakdown'])
-        cv2.imshow("Skeleton Canvas", canvas)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()

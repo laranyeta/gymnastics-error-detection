@@ -6,7 +6,33 @@ import numpy as np
 from backend.hpe.pose.utils.vision import CONNECTIONS
 from backend.scoring.evaluator import AcrobaticEvaluator
 from backend.scoring.rules import COLOR_MAP
-from backend.rnn.predict import load_prediction_model, predict_window 
+from backend.rnn.predict import load_prediction_model, predict
+
+def denormalize_point(x_val, y_val, view_range=3.0, canvas_size=640): 
+    px = int((float(x_val)+view_range)/(view_range*2)*canvas_size)
+    py = int((float(y_val)+view_range)/(view_range*2)*canvas_size)
+    return px, py
+
+def get_pt(idx, pos, VIEW_RANGE=3.0, canvas_size=640):
+    x_val = float(pos.get(f"x_{idx}", 0))
+    y_val = float(pos.get(f"y_{idx}", 0))
+    return denormalize_point(x_val, y_val, VIEW_RANGE, canvas_size)
+
+def get_ankle_displacement(frame_A, frame_B, view_range=3.0, canvas_size=640): #denormalizes point from normalized coordinates by torso placement
+    pos_A = frame_A.get("position", {})
+    pos_B = frame_B.get("position", {})
+    
+    #frame A
+    x1_norm = pos_A.get("x_27", 0) #keypoint 27 -> left ankle (default)
+    y1_norm = pos_A.get("y_27", 0)
+    px1, py1 = denormalize_point(x1_norm, y1_norm, view_range, canvas_size)
+    
+    #frame B
+    x2_norm = pos_B.get("x_27", 0)
+    y2_norm = pos_B.get("y_27", 0)
+    px2, py2 = denormalize_point(x2_norm, y2_norm, view_range, canvas_size)
+    
+    return math.sqrt(math.pow(px2 - px1, 2) + math.pow(py2 - py1, 2)) #euclidean distance
 
 def calculate_split_angle(pos): #calculates the real angle by making an imaginary keypoint for extra vectorial angle calculation
     hip_L_x, hip_L_y = pos.get("x_23", 0), pos.get("y_23", 0)
@@ -71,6 +97,24 @@ def find_acrobatic_peak(sequence, pred):
         
     return idx, peak_frame
 
+def find_acrobatic_window(sequence, peak_idx, thr=3.0):
+    start_idx = peak_idx
+    end_idx = peak_idx
+
+    for i in range(peak_idx, 0, -1): #searching backwards for the start of the acrobatic
+        d = get_ankle_displacement(sequence[i], sequence[i-1])
+        if d < thr: 
+            start_idx = i
+            break
+            
+    for i in range(peak_idx, len(sequence)-1): #searching forwards for the end of the acrobatic
+        d = get_ankle_displacement(sequence[i], sequence[i+1])
+        if d < thr: 
+            end_idx = i
+            break
+            
+    return start_idx, end_idx
+
 def evaluate_performance(sequence, pred): #evaluates only one acrobatic
     evaluator = AcrobaticEvaluator()
     peak_idx, _ = find_acrobatic_peak(sequence, pred)
@@ -119,29 +163,38 @@ def evaluate_routine(json_path, window=40, step=20): #evaluates more than one ac
     model, device = load_prediction_model() 
     total_frames = len(sequence)
     results = []
-    last_pred = None #last prediction of the model
+    last_pred = None
 
-    for start in range(0, total_frames - window+1, step):
-        end = start + window
+    start = 0
+    while start <= total_frames-window:
+        end = start+window
         window_seq = sequence[start:end]
-        pred, conf = predict_window(model, device, window_seq)
+        pred, conf = predict(model, device, window_seq) #predicts
     
         if pred != "none" and conf > 50 and pred != last_pred:
             penalty, breakdown, local_peak = evaluate_performance(window_seq, pred)
-            global_peak = start + local_peak
+            global_peak = start+local_peak
+
+            #print(f"\nAcrobatic: {pred.upper()} (Peak Global: Frame {global_peak})")
+            start_acro, end_acro = find_acrobatic_window(sequence, global_peak, thr=3.0)
+            
             results.append({
                 "acrobatic": pred,
                 "global_peak": global_peak,
+                "start_frame": start_acro,
+                "end_frame": end_acro, 
                 "penalty": penalty,
                 "breakdown": breakdown,
                 "confidence": conf,
                 "angles": sequence[global_peak].get("angles", {}), #to draw the skeleton
                 "position": sequence[global_peak].get("position", {})
             })
-            last_pred = pred
-        elif pred == "none":
-            last_pred = None 
-            
+            start = end_acro
+            last_pred = pred 
+        else:
+            if pred == "none":
+                last_pred = None 
+            start += step
     return results
 
 def color_joint_deduction(COLOR_MAP, breakdown):
@@ -169,18 +222,10 @@ def color_joint_deduction(COLOR_MAP, breakdown):
 
 def generate_skeleton_canvas(pos, breakdown, is_false_positive=False, canvas_size=640):
     canvas = np.zeros((canvas_size, canvas_size, 3), dtype=np.uint8)
-
     VIEW_RANGE = 3.0
-    def get_pt(idx):
-        x_val = float(pos.get(f"x_{idx}", 0))
-        y_val = float(pos.get(f"y_{idx}", 0))
-        px = int((x_val+VIEW_RANGE)/(VIEW_RANGE*2)*canvas_size)
-        py = int((y_val+VIEW_RANGE)/(VIEW_RANGE*2)*canvas_size)
-        return (px, py)
-    
     for start_idx, end_idx in CONNECTIONS:
-        pt1 = get_pt(start_idx)
-        pt2 = get_pt(end_idx)
+        pt1 = get_pt(start_idx, pos, VIEW_RANGE, canvas_size)
+        pt2 = get_pt(end_idx, pos, VIEW_RANGE, canvas_size)
         cv2.line(canvas, pt1, pt2, (255, 255, 255), 2)
         cv2.circle(canvas, pt1, 4, (255, 255, 255), -1)
         cv2.circle(canvas, pt2, 4, (255, 255, 255), -1)
@@ -188,11 +233,11 @@ def generate_skeleton_canvas(pos, breakdown, is_false_positive=False, canvas_siz
     if is_false_positive: #blank canvas for false positives (no deductions)
         return canvas
 
-    x_11, x_12 = get_pt(11), get_pt(12) 
-    x_23, x_24 = get_pt(23), get_pt(24) 
-    x_25, x_26 = get_pt(25), get_pt(26) 
-    x_27, x_28 = get_pt(27), get_pt(28) 
-    x_31, x_32 = get_pt(31), get_pt(32) 
+    x_11, x_12 = get_pt(11, pos, VIEW_RANGE, canvas_size), get_pt(12, pos, VIEW_RANGE, canvas_size)
+    x_23, x_24 = get_pt(23, pos, VIEW_RANGE, canvas_size), get_pt(24, pos, VIEW_RANGE, canvas_size)
+    x_25, x_26 = get_pt(25, pos, VIEW_RANGE, canvas_size), get_pt(26, pos, VIEW_RANGE, canvas_size) 
+    x_27, x_28 = get_pt(27, pos, VIEW_RANGE, canvas_size), get_pt(28, pos, VIEW_RANGE, canvas_size) 
+    x_31, x_32 = get_pt(31, pos, VIEW_RANGE, canvas_size), get_pt(32, pos, VIEW_RANGE, canvas_size) 
     x_i = (int((x_23[0]+x_24[0])/2), int((x_23[1]+x_24[1])/2)) #virtual pelvis keypoint 
 
     colors = color_joint_deduction(COLOR_MAP, breakdown)
@@ -229,7 +274,7 @@ def generate_skeleton_canvas(pos, breakdown, is_false_positive=False, canvas_siz
     return canvas
 
 if __name__ == "__main__":
-    results = evaluate_routine("backend/rnn/test/test08.json", window=40, step=20)
+    results = evaluate_routine("backend/rnn/test/demo.json", window=40, step=20)
     for res in results:
         print(f"Acrobatic: {res['acrobatic']}, Confidence: {res['confidence']}, Penalty: {res['penalty']}, Breakdown: {res['breakdown']}")
         canvas = generate_skeleton_canvas(res['position'], res['breakdown'])

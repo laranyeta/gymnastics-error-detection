@@ -136,13 +136,41 @@ The project is built entirely on Python, leveraging industry-standard libraries 
 
 ---
 
-# Dataset & Training
-wip 
+## RESULTS & PERFORMANCE
+
+The system bridges neural network predictions with real-time geometric rule checking. Below is a visual analysis of the pipeline's performance, showcasing both optimal executions and critical edge cases processed by the application.
 
 ---
 
-# Results & Performance
-wip
+#### VISUAL AUDITING & CASE ANALYSIS
+
+##### *Optimal Case: Element Detection & Deduction Mapping*
+The LSTM correctly classifies the acrobatic leap, isolates the exact geometric execution peak frame, and highlights joint infractions dynamically on the canvas. 
+
+[add image]
+
+> _**Biomechanical Result:**_ The system automatically maps the official FIG *Code of Points* thresholds, triggering the appropriate penalty colors (Green for Minor, Orange for Medium, Red for Severe).
+
+##### *Critical Case: Transition False Positive*
+Due to the temporal boundaries of the dataset, a transition landing frame is falsely flagged as an active leap, forcing an artificial severe joint penalty due to the ground impact compression[cite: 1].
+
+[add image]
+
+>_**Human-in-the-Loop Solution:**_ This technical limitation highlights the vital necessity of our collaborative architecture. The user interface allows judges to instantly bypass and override these localized temporal anomalies with a single click, keeping human expertise at the center of the scoring process.
+
+---
+
+#### *QUANTITATIVE METRICS & TRAINING REPORT*
+
+All raw mathematical data, comparative benchmarks between Human Pose Estimation architectures (Sapiens-2B vs. YOLO vs. MediaPipe), and the LSTM confusion matrix have been offloaded to maintain a clean main workflow.
+
+>**_Looking for the numbers?_** For an extensive breakdown of the accuracy scores, data augmentation techniques, and loss functions, please check the report [Metrics and Model Evaluation](./metrics/README.md).
+
+
+#### *COMPUTATIONAL PERFORMANCE & LATENCY*
+* **Processing Cost:** Processing a continuous 1-minute and 20-second video routine (approx. 2400 frames) requires **3 to 4 hours** of execution utilizing an *NVIDIA GeForce RTX 2080 Ti* GPU.
+* **Engineering Trade-off:** This processing latency is a direct consequence of deploying a foundational model with 2 billion parameters Sapiens-2B. However, this trade-off is highly justified, as it provides the extreme anatomical robustness required to accurately track multi-axial athletic movements from low-cost, monocular standard camera devices, democratizing sports analytics for grassroots clubs.
+
 
 ---
 

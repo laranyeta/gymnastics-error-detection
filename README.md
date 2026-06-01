@@ -14,16 +14,15 @@
 </p>
 
 <p align="center">
-  <a href="#About-The-Project">About The Project</a> •
-  <a href="#Key-Features">Key Features</a> •
-  <a href="#System Architecture">System Architecture</a> •
-  <a href="#Repository Structure">Repository Structure</a> •
-  <a href="#Tech Stack">Tech Stack</a> •
-  <a href="#Dataset-Training">Dataset & Training</a> •
-  <a href="#Results-Performance">Results & Performance</a> •
-  <a href="#How-To-Use">How To Use</a> •
-  <a href="#License">License</a> •
-  <a href="#Credits">Credits</a>
+  <a href="#About-The-Project">ABOUT THE PROJECT</a> •
+  <a href="#Key-Features">KEY FEATURES</a> •
+  <a href="#System Architecture">SYSTEM ARCHITECTURE</a> •
+  <a href="#Repository Structure">REPOSITORY STRUCTURE</a> •
+  <a href="#Tech Stack">TECH STACK</a> •
+  <a href="#Results-Performance">RESULTS & PERFORMANCE</a> •
+  <a href="#How-To-Use">HOW TO USE</a> •
+  <a href="#License">LICENSE</a> •
+  <a href="#Credits">CREDITS</a>
 </p>
 
 

@@ -7,6 +7,7 @@ class AppLogic:
     def __init__(self):
         self.e_score = BASE_ESCORE
         self.errors_by_frame = {}
+        self.active_acrobatic = {}
         self.error_frames_list = []
         self.undo_stack = []
         self.redo_stack = []
@@ -17,17 +18,22 @@ class AppLogic:
             self.raw_data = json.load(f)
 
         results = evaluate_routine(filename, window=40, step=20)
-        
         self.undo_stack.clear()
         self.redo_stack.clear()
         self.e_score = BASE_ESCORE
         self.errors_by_frame.clear()
         self.error_frames_list.clear()
-        
+        self.active_acrobatic.clear()
+
         for res in results:
-            frame = res["global_peak"]
+            for f_idx in range(res["start_frame"], res["end_frame"]+1):
+                self.active_acrobatic[f_idx] = {
+                    "acrobatic": res["acrobatic"],
+                    "confidence": res["confidence"]
+                }
+
+            frame = res["global_peak"] #only errors display in global peak frame
             self.error_frames_list.append(frame)
-            
             reasons_list = []
             for b_str in res["breakdown"]:
                 try:
@@ -35,7 +41,6 @@ class AppLogic:
                     penalty_val = float(val_str)
                 except:
                     penalty_val = 0.0
-                
                 reasons_list.append({"text": b_str, "penalty": penalty_val, "status": "pending"})
                 
             self.errors_by_frame[frame] = {
@@ -46,6 +51,7 @@ class AppLogic:
                 "reasons": reasons_list
             }
             
+                
         self.error_frames_list.sort()
         return len(self.error_frames_list)
 

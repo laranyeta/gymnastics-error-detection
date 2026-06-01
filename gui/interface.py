@@ -1,4 +1,5 @@
 import os
+import sys
 import cv2
 import gui.style as css
 
@@ -7,6 +8,7 @@ from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QMessageBox, QScrollArea)
 from PyQt6.QtCore import Qt, QTimer, QSize
 from PyQt6.QtGui import QImage, QPixmap, QAction, QIcon
+from backend.rnn.predict import resource_path
 from backend.rnn.score import generate_skeleton_canvas
 from gui.components import DeductionWidget
 from gui.logic import AppLogic
@@ -14,7 +16,7 @@ from gui.logic import AppLogic
 class MainApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("UAB Escola d'Enginyeria TFG - Gymnastics Error Detection")
+        self.setWindowTitle("Gymnastics Error Detector")
         self.resize(1200, 750)
         
         self.logic = AppLogic()
@@ -92,13 +94,13 @@ class MainApp(QMainWindow):
             btn.setStyleSheet("background-color: transparent;")
             return btn
         
-        self.btn_prev_err = create_icon_button("gui/assets/prev.png", self.jump_prev_error)
+        self.btn_prev_err = create_icon_button(resource_path("gui/assets/prev.png"), self.jump_prev_error)
         self.btn_prev_err.setEnabled(False)
         
-        self.btn_play_pause = create_icon_button("gui/assets/play.png", self.toggle_playback)
+        self.btn_play_pause = create_icon_button(resource_path("gui/assets/play.png"), self.toggle_playback)
         self.btn_play_pause.setEnabled(False)
         
-        self.btn_next_err = create_icon_button("gui/assets/next.png", self.jump_next_error)
+        self.btn_next_err = create_icon_button(resource_path("gui/assets/next.png"), self.jump_next_error)
         self.btn_next_err.setEnabled(False)
         
         self.frame_slider = QSlider(Qt.Orientation.Horizontal)
@@ -286,12 +288,12 @@ class MainApp(QMainWindow):
 
             fps = self.video_cap.get(cv2.CAP_PROP_FPS) or 30
             self.timer.start(int(1000 / fps))
-            self.btn_play_pause.setIcon(QIcon("gui/assets/pause.png")) #show pause icon
+            self.btn_play_pause.setIcon(QIcon(resource_path("gui/assets/pause.png"))) #show pause icon
             self.right_container.hide() #only shows video when playing
             
         else:
             self.timer.stop()
-            self.btn_play_pause.setIcon(QIcon("gui/assets/play.png")) #show play icon
+            self.btn_play_pause.setIcon(QIcon(resource_path("gui/assets/play.png"))) #show play icon
             self.right_container.show() #show logs when paused
             self.update_log_for_current_frame()
 
@@ -335,20 +337,28 @@ class MainApp(QMainWindow):
 
     def update_log_for_current_frame(self):
         self.clear_layout(self.log_layout)
-        
-        if self.current_frame in self.logic.errors_by_frame:
-            data = self.logic.errors_by_frame[self.current_frame]
+        if self.current_frame in self.logic.active_acrobatic: #shows during the whole jump
+            acro_data = self.logic.active_acrobatic[self.current_frame]
             self.lbl_acrobatic_info.setStyleSheet(css.ACROBATIC_INFO_STYLE)
             self.lbl_confidence_info.setStyleSheet(css.CONFIDENCE_INFO_STYLE)
 
-            if data["acrobatic"] == "Transition":
-                self.btn_reject_all.setEnabled(False)
+            if acro_data["acrobatic"] == "Transition":
                 self.lbl_acrobatic_info.setText("<b>Detected Acrobatic:</b> TRANSITION")
             else:
-                self.btn_reject_all.setEnabled(True)
-                self.lbl_acrobatic_info.setText(f"<b>Detected Acrobatic:</b> {data['acrobatic'].upper()}")
+                self.lbl_acrobatic_info.setText(f"<b>Detected Acrobatic:</b> {acro_data['acrobatic'].upper()}")
                 
-            self.lbl_confidence_info.setText(f"<b>Confidence:</b> {data['confidence']:.2f}%")
+            self.lbl_confidence_info.setText(f"<b>Confidence:</b> {acro_data['confidence']:.2f}%")
+        else:
+            self.lbl_acrobatic_info.setText("<b>Detected Acrobatic:</b> None")
+            self.lbl_confidence_info.setText("<b>Confidence:</b> None")
+
+        if self.current_frame in self.logic.errors_by_frame:
+            data = self.logic.errors_by_frame[self.current_frame]
+            
+            if data["acrobatic"] == "Transition":
+                self.btn_reject_all.setEnabled(False)
+            else:
+                self.btn_reject_all.setEnabled(True)
             
             if not data["reasons"]:
                 lbl = QLabel("Perfect execution. No deductions.")
@@ -359,10 +369,8 @@ class MainApp(QMainWindow):
                     self.log_layout.addWidget(DeductionWidget(self.current_frame, i, reason_obj, self))
         else:
             self.btn_reject_all.setEnabled(False)
-            self.lbl_acrobatic_info.setText("<b>Detected Acrobatic:</b> None")
-            self.lbl_confidence_info.setText("<b>Confidence:</b> None")
-            lbl = QLabel("No data available for this frame.")
-            lbl.setStyleSheet("color: gray;")
+            lbl = QLabel("Possible deductions will appear during peak frame of the execution.")
+            lbl.setStyleSheet("color: gray; font-style: italic; padding: 10px;")
             self.log_layout.addWidget(lbl)
             
         self.log_layout.addStretch()

@@ -121,8 +121,18 @@ The software ecosystem is strictly structured into the following specialized dir
 
 ---
 
-# Tech Stack
-wip
+## TECH STACK
+
+The project is built entirely on Python, leveraging industry-standard libraries for Deep Learning inference, advanced computer vision, mathematical signal processing, and high-performance desktop engineering.
+
+| TECHNOLOGY | CATEGORY | ROLE |
+| :--- | :--- | :--- |
+| <img src="https://img.shields.io/badge/python-3670A0?style=flat&logo=python&logoColor=ffdd54" alt="Python"> | Core Language | The foundational programming language chosen for its extensive scientific ecosystem and native integration with AI frameworks. |
+| <img src="https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=flat&logo=PyTorch&logoColor=white" alt="PyTorch"> | Deep Learning | Powers the temporal deep learning execution layer, handling sequence dimensions and modern deep inference for the LSTM classifier. |
+| <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=flat&logo=opencv&logoColor=white" alt="OpenCV"> | Computer Vision | Acts as the primary video processing engine. Handles frame decoding, coordinates pixel operations, and renders the vectorized skeleton structures dynamically. |
+| <img src="https://img.shields.io/badge/SciPy-%230C55A5.svg?style=flat&logo=scipy&logoColor=white" alt="SciPy"> | Signal Processing | Provides the mathematical implementation for the *Savitzky-Golay* filter to smooth joint positions and eliminate skeleton jitter. |
+| <img src="https://img.shields.io/badge/numpy-%23013243.svg?style=flat&logo=numpy&logoColor=white" alt="NumPy"> / <img src="https://img.shields.io/badge/pandas-%23150458.svg?style=flat&logo=pandas&logoColor=white" alt="Pandas"> | Data Manipulation | High-performance multi-dimensional array structures and data frames required to manipulate and parse structural coordinate timelines efficiently. |
+| <img src="https://img.shields.io/badge/Qt-%2341CD52.svg?style=flat&logo=Qt&logoColor=white" alt="Qt"> | Graphical UI | Desktop dashboard framework (PyQt6) chosen to build the referee auditing interface, handling high-speed desktop events and native hotkeys asynchronously. |
 
 ---
 

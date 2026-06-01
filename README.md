@@ -28,18 +28,74 @@
 
 
 
-# About The Project
-wip
+## ABOUT THE PROJECT
+
+Traditional gymnastics judging is a highly demanding task. **Officials must track hyper-fast, complex joint movements in fractions of a second**, which makes the evaluation of the Execution Score *(E-Score)* naturally prone to **subjectivity** and cognitive overload.
+
+This project is an **AI-assisted judging system** designed to **automate**, **standardize** and bring **transparency** to artistic gymnastics evaluation. Developed as a Bachelor’s Thesis *(TFG)* at the *Universitat Autònoma de Barcelona (UAB)*, this project bridges the gap between **sports biomechanics** and **Computer Vision**.
+
+#### *HOW DOES IT WORK?*
+
+Instead of relying on rigid heuristics, the system processes raw video inputs through a modular pipeline:
+1. **_Keypoint Extraction:_** Tracks the athlete's full-body joint topology frame-by-frame.
+2. **_Temporal Classification:_** Uses a Recurrent Neural Network (LSTM) to predict the specific acrobatic element (*Tuck, Pike, Split, or Straddle*) over time sequences.
+3. **_Biomechanical Audit:_** Automatically calculates angular vectors and joint displacements, cross-referencing them with official regulations to flag faults like bent knees OR insufficient flexion.
+
+#### *BROUGHT TO THE REAL WORLD*
+
+The goal of this project is not to replace human judges, but to act as a **precise assistant**. The core of the application is an **interactive desktop dashboard** where the AI proposes timestamped deductions and kinematic breakdowns, while the human official retains ultimate control, seamlessly accepting or rejecting individual proposals via intuitive hotkeys. _**The result is a collaborative, objective, and auditable final E-Score.**_
 
 ---
   
-# Key Features
-wip
+## KEY FEATURES
+
+To bridge the gap between high-performance technology and sports, the application is designed not just as a technical tool, but as a solution to real-world judging challenges. The core functionalities are structured around three main pillars: **the democratization of elite technology**, **mathematical objectivity**, and **human-centered efficiency**.
+
+##### **DEMOCRATIZING ELITE TECHNOLOGY**
+Brings **elite judging to local clubs, schools, and low-budget competitions**. By requiring only standard video inputs (like smartphone recordings), it eliminates the need for expensive multi-camera infrastructure or specialized biomechanical sensors.
+
+##### **ELIMINATION OF SUBJECTIVITY**
+Standardizes _E-Score_ through **mathematical analysis**. The system cross-references the athlete’s movements with official regulations, ensuring fair and unbiased scoring that protects gymnasts from human fatigue or split-second oversights.
+
+##### **WORKFLOW EFFICIENCY**
+Drastically reduces the time required to audit and review complex routines. With specialized **keyboard shortcuts**, judges can instantly navigate frame-by-frame and jump directly to critical execution peaks without breaking their workflow rhythm.
+
+##### **IMMEDIATE ACTIONABLE FEEDBACK**
+Enhances the training cycle by **exporting instant, structured chronological reports**. Coaches and athletes no longer just receive a single cold final number; they get a timestamped breakdown of exactly where and why points were deducted, **turning the evaluation into a powerful learning tool.**
 
 ---
 
-# System Architecture
-wip
+## SYSTEM ARCHITECTURE
+
+The project is designed following a **modular software architecture** that ensures a strict separation of concerns. The system isolates deep learning inference, temporal sequence classification, and geometric biomechanical auditing from the graphical user interface.
+
+A complete diagram of the modular architecture and package interaction can be found in the section below.
+
+#### *BLOCK DIAGRAM*
+
+<img width="1000" height="1000" alt="Block Diagram" src="https://github.com/user-attachments/assets/4e8b7be1-a867-4381-aa8d-10004d1eec4c" />
+
+#### *MODULE INTERACTION*
+
+The software ecosystem is strictly structured into the following specialized directories and modules:
+
+##### *MAIN ENTRY POINT*
+* **`app.py`:** The main executable script that initializes the system, setting up the application environment and launching the graphical dashboard.
+
+##### *BACKEND MODULES (`backend/`)*
+* **`hpe/pose/`:** Acts as the data ingestion layer. It manages the integration with Meta's Sapiens-2B foundation model repository to process raw video inputs (`.mp4`/`.avi`) and extract frame-by-frame joint coordinates into normalized `.json` structures[cite: 1]. It also handles spatial interpolation and Savitzky-Golay filtering via `utils/` to guarantee skeleton stability.
+* **`rnn/` (`model.py`, `predict.py`, `train.py`):** The temporal processing unit. It takes the sequential `.json` coordinates, structures them into fixed temporal blocks, and feeds them into a trained Long Short-Term Memory (LSTM) network to classify active acrobatic elements (*Tuck, Pike, Split, Straddle*) with an associated confidence percentage[cite: 1].
+* **`scoring/`:** The biomechanical audit engine[cite: 1]. 
+  * `rules.py` maps the physical regulations of the official FIG *Code of Points* into geometric constraints[cite: 1].
+  * `score.py` builds the *Virtual Pelvis* anchor point and calculates vectorial angles at execution peaks[cite: 1].
+  * `evaluator.py` (`AcrobaticEvaluator`) processes these values to calculate specific penalty weights (*Minor, Medium, Severe*) and update the final *E-Score*.
+
+##### *GRAPHICAL USER INTERFACE LAYER (`gui/`)*
+* **`interface.py`:** The core window wrapper built with the PyQt6 framework. It coordinates the asynchronous desktop event loop, structures the *Dual Viewport* display layout, and captures hotkey events[cite: 1].
+* **`components.py`:** Contains custom, reusable PyQt6 GUI elements and widgets (such as individual deduction logs, media buttons, or customized timelines) to keep `interface.py` clean and maintainable.
+* **`logic.py`:** Acts as the controller or "glue code" between the frontend state and the backend evaluation engine. It handles loading data stacks, processes undo/redo requests natively, and formats execution updates for the UI.
+* **`style.py`:** Centralizes all graphical themes and QSS (Qt Style Sheets) configurations, managing borders, padding, border-radius, and interactive hover states for UI elements.
+* **`assets/`:** A dedicated directory that stores static graphical elements, user icons, and application media assets.
 
 ---
 

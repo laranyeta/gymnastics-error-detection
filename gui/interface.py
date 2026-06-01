@@ -133,8 +133,8 @@ class MainApp(QMainWindow):
         self.lbl_logs_title = QLabel("<b>Deductions Logs</b>")
         self.lbl_logs_title.setStyleSheet(css.TITLE_STYLE)
         
-        self.btn_undo = create_icon_button("gui/assets/undo.png", self.undo_action)
-        self.btn_redo = create_icon_button("gui/assets/redo.png", self.redo_action)
+        self.btn_undo = create_icon_button(resource_path("gui/assets/undo.png"), self.undo_action)
+        self.btn_redo = create_icon_button(resource_path("gui/assets/redo.png"), self.redo_action)
         
         logs_header_layout.addWidget(self.lbl_logs_title)
         logs_header_layout.addStretch()

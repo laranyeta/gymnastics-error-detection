@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QSlider, QPushButton, QFileDialog, 
                              QMessageBox, QScrollArea)
 from PyQt6.QtCore import Qt, QTimer, QSize
-from PyQt6.QtGui import QImage, QPixmap, QAction, QIcon
+from PyQt6.QtGui import QImage, QPixmap, QAction, QIcon, QKeySequence, QShortcut
 from backend.rnn.predict import resource_path
 from backend.rnn.score import generate_skeleton_canvas
 from gui.components import DeductionWidget
@@ -18,15 +18,14 @@ class MainApp(QMainWindow):
         super().__init__()
         self.setWindowTitle("Gymnastics Error Detector")
         self.resize(1200, 750)
-        
         self.logic = AppLogic()
-        
         self.video_cap = None
         self.timer = QTimer()
         self.timer.timeout.connect(self.next_frame)
         self.is_playing = False
         self.current_frame = 0  
         self.current_view_mode = "Video"
+        self.setAcceptDrops(True)
         
         self.create_menu_bar()
         self.setup_ui()
@@ -35,14 +34,20 @@ class MainApp(QMainWindow):
         menubar = self.menuBar()
         file_menu = menubar.addMenu('File')
 
-        load_video_action = QAction('Load Video (.mp4/.avi)', self)
+        load_video_action = QAction('Load video', self)
+        load_video_action.setShortcut(QKeySequence("CTRL+O")) #open shortcut
         load_video_action.triggered.connect(self.load_video)
         file_menu.addAction(load_video_action)
 
-        self.load_json_action = QAction('Load Data (.json)', self)
+        self.load_json_action = QAction('Load JSON data', self)
         self.load_json_action.triggered.connect(self.load_json)
         self.load_json_action.setEnabled(False) 
         file_menu.addAction(self.load_json_action)
+
+        export_report_action = QAction('Export report', self)
+        export_report_action.setShortcut(QKeySequence("CTRL+S")) #open shortcut
+        export_report_action.triggered.connect(self.export_report)
+        file_menu.addAction(export_report_action)
 
     def setup_ui(self):
         central_widget = QWidget()
@@ -77,7 +82,7 @@ class MainApp(QMainWindow):
         mode_layout.addWidget(self.btn_mode_video, stretch=1)
         mode_layout.addWidget(self.btn_mode_skeleton, stretch=1)
         
-        self.video = QLabel("Go to File > Load Video to start")
+        self.video = QLabel("Drag and drop a video here or use File > Load Video to get started")
         self.video.setStyleSheet(css.VIDEO_STYLE)
         self.video.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.video.setMinimumSize(640, 480)
@@ -152,10 +157,15 @@ class MainApp(QMainWindow):
         
         self.log_scroll.setWidget(self.log_container)
         
-        self.btn_reject_all = QPushButton("False Positive (Discard frame)")
+        buttons_action_layout = QHBoxLayout()
+        buttons_action_layout.setSpacing(10)
+
+        self.btn_reject_all = QPushButton("False Positive (Discard frame)") #marks as transition
         self.btn_reject_all.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_reject_all.setStyleSheet(css.BTN_REJECT_ALL_STYLE)
         self.btn_reject_all.clicked.connect(self.reject_all_deductions)
+
+        buttons_action_layout.addWidget(self.btn_reject_all, stretch=1)
 
         self.score_title = QLabel(f"Final E-Score")
         self.score_title.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -169,7 +179,7 @@ class MainApp(QMainWindow):
         col_R.addWidget(self.lbl_acrobatic_info)
         col_R.addWidget(self.lbl_confidence_info)
         col_R.addWidget(self.log_scroll, stretch=1)
-        col_R.addWidget(self.btn_reject_all)
+        col_R.addLayout(buttons_action_layout)
         col_R.addWidget(self.score_title)
         col_R.addWidget(self.score)
 
@@ -181,8 +191,37 @@ class MainApp(QMainWindow):
         self.btn_reject_all.hide()
         self.btn_undo.hide()
         self.btn_redo.hide()
-        
         self.update_undo_redo_buttons()
+
+        #undo-redo shortcuts
+        self.undo_shortcut = QShortcut(QKeySequence("CTRL+Z"), self)
+        self.undo_shortcut.activated.connect(self.undo_action)
+        self.redo_shortcut = QShortcut(QKeySequence("CTRL+Y"), self)
+        self.redo_shortcut.activated.connect(self.redo_action)
+
+        #false positive
+        self.undo_shortcut = QShortcut(QKeySequence("CTRL+F"), self)
+        self.undo_shortcut.activated.connect(self.reject_all_deductions)
+
+        #export report
+        self.redo_shortcut = QShortcut(QKeySequence("CTRL+S"), self)
+        self.redo_shortcut.activated.connect(self.export_report)
+
+        #play/pause
+        self.space_shortcut = QShortcut(QKeySequence("Space"), self)
+        self.space_shortcut.activated.connect(self.toggle_playback)
+
+        #skip frames
+        self.next_frame_shortcut = QShortcut(QKeySequence("Right"), self)
+        self.next_frame_shortcut.activated.connect(self.step_forward_frame)
+        self.prev_frame_shortcut = QShortcut(QKeySequence("Left"), self)
+        self.prev_frame_shortcut.activated.connect(self.step_backward_frame)
+
+        #next/prev error
+        self.next_err_shortcut = QShortcut(QKeySequence("X"), self)
+        self.next_err_shortcut.activated.connect(self.jump_next_error)
+        self.prev_err_shortcut = QShortcut(QKeySequence("Z"), self)
+        self.prev_err_shortcut.activated.connect(self.jump_prev_error)
 
     def switch_view_mode(self, mode):
         self.current_view_mode = mode
@@ -191,8 +230,11 @@ class MainApp(QMainWindow):
         self.refresh_display()
 
     #load video + searches for json in same directory
-    def load_video(self):
-        filename, _ = QFileDialog.getOpenFileName(self, "Select video", "", "videos (*.mp4 *.avi)")
+    def load_video(self, filepath=None):
+        if filepath:
+            filename = filepath
+        else:
+            filename, _ = QFileDialog.getOpenFileName(self, "Select video", "", "videos (*.mp4 *.avi)")
         if filename:
             if self.video_cap: self.video_cap.release()
             self.video_cap = cv2.VideoCapture(filename)
@@ -255,6 +297,17 @@ class MainApp(QMainWindow):
                     self.set_frame_position(self.logic.error_frames_list[0])
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"[ERROR] Failed to process {filename}:\n{str(e)}")
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        for url in event.mimeData().urls():
+            filepath = url.toLocalFile()
+            if filepath.lower().endswith(('.mp4', '.avi')):
+                self.load_video(filepath)
+                break #only loads first video
 
     #user interface actions
     def undo_action(self):
@@ -320,6 +373,16 @@ class MainApp(QMainWindow):
                 self.display_frame(frame, frame_idx)
                 self.update_log_for_current_frame()
 
+    def step_forward_frame(self):
+        if self.video_cap:
+            total_frames = int(self.video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            if self.current_frame < total_frames - 1:
+                self.set_frame_position(self.current_frame + 1)
+
+    def step_backward_frame(self):
+        if self.video_cap and self.current_frame > 0:
+            self.set_frame_position(self.current_frame - 1)
+        
     def jump_prev_error(self):
         prev_errs = [f for f in self.logic.error_frames_list if f < self.current_frame]
         if prev_errs: self.set_frame_position(max(prev_errs))
@@ -406,3 +469,17 @@ class MainApp(QMainWindow):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.refresh_display()
+    
+    def export_report(self):
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Report", "", "Text Files (*.txt)")
+        if filename:
+            with open(filename, "w") as f:
+                f.write(f"GYMNASTICS PERFORMANCE REPORT\n")
+                f.write(f"=============================\n\n")
+                f.write(f"FINAL E-SCORE: {self.logic.e_score:.1f}\n\n")
+                f.write(f"Deductions Breakdown:\n")
+                for frame, data in self.logic.errors_by_frame.items():
+                    f.write(f"- Frame {frame} ({data['acrobatic'].upper()}): \n")
+                    for r in data["reasons"]:
+                        f.write(f"  [{r['status'].upper()}] {r['text']}\n")
+            QMessageBox.information(self, "Success", "Report exported successfully!")

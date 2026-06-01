@@ -1,0 +1,16 @@
+GYMNASTICS PERFORMANCE REPORT
+=============================
+
+FINAL E-SCORE: 9.3
+
+Deductions Breakdown:
+- Frame 22 (SPLIT): 
+  [ACCEPTED] Bent knee (160.9º) below 170º. Applying -0.1 deduction for MINOR.
+  [ACCEPTED] Bent ankle (111.8º) below 130º. Applying -0.1 deduction for MINOR.
+- Frame 52 (STRADDLE): 
+  [ACCEPTED] Opening (152.0º) below 160º. Applying -0.3 deduction for MEDIUM.
+  [REJECTED] Bent knee (167.4º) below 170º. Applying -0.1 deduction for MINOR.
+- Frame 97 (TUCK): 
+  [ACCEPTED] Bent torso (77.7º) above 65º. Applying -0.1 deduction for MINOR.
+  [ACCEPTED] Bent ankle (55.6º) below 130º. Applying -0.1 deduction for MINOR.
+- Frame 135 (PIKE): 

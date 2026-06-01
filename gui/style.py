@@ -82,6 +82,21 @@ BTN_REJ_STYLE = """
     }
 """
 
+BTN_EXPORT_STYLE = """
+    QPushButton {
+        background-color: #4B5563; 
+        color: white; 
+        font-weight: bold; 
+        padding: 10px; 
+        margin-top: 5px; 
+        border-radius: 8px;
+        border: none;
+    }
+    QPushButton:hover {
+        background-color: #374151;
+    }
+"""
+
 DEDUCTION_ACCEPTED = "background-color: #d4edda; color: #155724; border-radius: 12px; margin-bottom: 5px;"
 DEDUCTION_REJECTED = "background-color: #e2e3e5; color: #383d41; border-radius: 12px; margin-bottom: 5px;"
 DEDUCTION_PENDING = "background-color: white; color: black; border-radius: 12px; margin-bottom: 5px;"

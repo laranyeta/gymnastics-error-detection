@@ -3,10 +3,10 @@
     <img width="1280" height="320" alt="banner" src="https://github.com/user-attachments/assets/2997131d-db53-418c-a8d2-741263ee8f52">
 </h2>
 
-<h3 align="center"><i>Turning pixels into precision:</i> Democratizing elite gymnastics judging with Computer Vision</h4>
+<h3 align="center"><samp><i>Turning pixels into precision:</i> Democratizing elite gymnastics judging with Computer Vision</samp></h4>
 
-<h4 align="center"> <i>Bachelor's Thesis (TFG) - Universitat Autònoma de Barcelona (UAB)</i></h6>
-<p align="center">
+<h4 align="center"> <samp><i>Bachelor's Thesis (TFG) - Universitat Autònoma de Barcelona (UAB)</i></h6>
+<p align="center"></samp>
   <img src="https://img.shields.io/badge/uab-tfg-blue?style=for-the-badge" alt="uab tfg">
 
   <img src="https://img.shields.io/badge/status-wip-blue?style=for-the-badge" alt="status wip">

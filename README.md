@@ -38,9 +38,9 @@ This project is an **AI-assisted judging system** designed to **automate**, **st
 ### <samp>> *HOW DOES IT WORK?*</samp>
 
 Instead of relying on rigid heuristics, the system processes raw video inputs through a modular pipeline:
-1. <samp>**Keypoint Extraction:**</samp> Tracks the athlete's full-body joint topology frame-by-frame.
-2. <samp>**Temporal Classification:**</samp> Uses a Recurrent Neural Network (LSTM) to predict the specific acrobatic element (*Tuck, Pike, Split, or Straddle*) over time sequences.
-3. <samp>**Biomechanical Audit:**</samp> Automatically calculates angular vectors and joint displacements, cross-referencing them with official regulations to flag faults like bent knees OR insufficient flexion.
+<samp>1 **Keypoint Extraction:**</samp> Tracks the athlete's full-body joint topology frame-by-frame.
+<samp>2 **Temporal Classification:**</samp> Uses a Recurrent Neural Network (LSTM) to predict the specific acrobatic element (*Tuck, Pike, Split, or Straddle*) over time sequences.
+<samp>3 **Biomechanical Audit:**</samp> Automatically calculates angular vectors and joint displacements, cross-referencing them with official regulations to flag faults like bent knees OR insufficient flexion.
 
 ### <samp>> *BROUGHT TO THE REAL WORLD*</samp>
 
@@ -61,7 +61,7 @@ Brings **elite judging to local clubs, schools, and low-budget competitions**. B
 ### <samp>> *ELIMINATION OF SUBJECTIVITY*</samp>
 Standardizes _E-Score_ through **mathematical analysis**. The system cross-references the athlete’s movements with official regulations, ensuring fair and unbiased scoring that protects gymnasts from human fatigue or split-second oversights.
 
-### <samp>>*WORKFLOW EFFICIENCY*</samp>
+### <samp>> *WORKFLOW EFFICIENCY*</samp>
 Drastically reduces the time required to audit and review complex routines. With specialized **keyboard shortcuts**, judges can instantly navigate frame-by-frame and jump directly to critical execution peaks without breaking their workflow rhythm.
 
 ### <samp>> *IMMEDIATE ACTIONABLE FEEDBACK*</samp>

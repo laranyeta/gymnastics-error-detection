@@ -210,7 +210,7 @@ If you prefer to run the application natively via Python, ensure you have Python
 git clone [https://github.com/laranyeta/gymnastics-error-detection.git](https://github.com/laranyeta/gymnastics-error-detection.git)
 cd gymnastics-error-detection
 
-#create and activate a virtual environment (Optional but recommended)
+#create and activate a virtual environment (optional but recommended)
 python3 -m venv venv
 source venv/bin/activate  #on windows use venv\Scripts\activate
 
@@ -240,7 +240,13 @@ docker build -t sapiens-extractor
 #### <samp> 3  *RUN THE EXTRACTION*</samp>
 Mount your local video folder to the container and run the inference script. The script will output a normalized .json file containing the frame-by-frame joint coordinates.
 ```
-docker run -v /path/to/your/local/videos:/workspace/data sapiens-extractor python main.py --input /workspace/data/my_video.mp4
+docker run --gpus '"device=0"' --shm-size=24g -it -v $(pwd):/workspace sapiens-extractor
+```
+> In parameter `device` you must put your own available device.
+
+Then run the `main.py` specifying your own video path source (in case it's saved in the main workspace directory) and your desired output directory (optional).
+```
+python extract.py --input /workspace/my_video.mp4 --output /workspace/results/
 ```
 
 #### <samp> 4  *LOAD IT TO THE APP*</samp>

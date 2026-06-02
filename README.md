@@ -162,18 +162,18 @@ The system bridges neural network predictions with real-time geometric rule chec
 
 ### <samp>> *VISUAL AUDITING & CASE ANALYSIS*</samp>
 
-#### <samp>*Optimal Case: Element Detection & Deduction Mapping*</samp>
+#### <samp>*OPTIMAL CASE: Element Detection & Deduction Mapping*</samp>
 The LSTM correctly classifies the acrobatic leap, isolates the exact geometric execution peak frame, and highlights joint infractions dynamically on the canvas. 
 
 <img width="1274" height="452" alt="Correct Behaviour" src="https://github.com/user-attachments/assets/66655bac-215d-44c4-ac20-53c3e7822774" />
 
-> _**Biomechanical Result:**_ The system automatically maps the official FIG *Code of Points* thresholds, triggering the appropriate penalty colors (Green for Minor, Orange for Medium, Red for Severe).
+> _**<samp>BIOMECHANICAL RESULT:</samp>**_ The system automatically maps the official FIG *Code of Points* thresholds, triggering the appropriate penalty colors (Green for Minor, Orange for Medium, Red for Severe).
 
-#### <samp>*Critical Case: Transition False Positive*</samp>
+#### <samp>*CRITICAL CASE: Transition False Positive*</samp>
 Due to the temporal boundaries of the dataset, a transition landing frame is falsely flagged as an active leap, forcing an artificial severe joint penalty due to the ground impact compression.
 <img width="1284" height="434" alt="Bad Behaviour" src="https://github.com/user-attachments/assets/f5a0e50a-61a2-4b3f-8b29-73c3b3496b0f" />
 
->_**Human-in-the-Loop Solution:**_ This technical limitation highlights the vital necessity of our collaborative architecture. The user interface allows judges to instantly bypass and override these localized temporal anomalies with a single click, keeping human expertise at the center of the scoring process.
+>_**<samp>HUMAN-IN-THE-LOOP SOLUTION</samp>:**_ This technical limitation highlights the vital necessity of our collaborative architecture. The user interface allows judges to instantly bypass and override these localized temporal anomalies with a single click, keeping human expertise at the center of the scoring process.
 
 ---
 

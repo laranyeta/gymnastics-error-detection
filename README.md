@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <small>
+  <sub>
     <a href="#About-The-Project"><samp>ABOUT THE PROJECT</samp></a> •
     <a href="#Key-Features"><samp>KEY FEATURES</samp></a> •
     <a href="#System Architecture"><samp>SYSTEM ARCHITECTURE</samp></a> •
@@ -24,7 +24,7 @@
     <a href="#How-To-Use"><samp>HOW TO USE</samp></a> •
     <a href="#License"><samp>LICENSE</samp></a> •
     <a href="#Credits"><samp>CREDITS</samp></a>
-  </small>
+  </sub>
 </p>
 
 
@@ -55,16 +55,16 @@ The goal of this project is not to replace human judges, but to act as a **preci
 
 To bridge the gap between high-performance technology and sports, the application is designed not just as a technical tool, but as a solution to real-world judging challenges. The core functionalities are structured around three main pillars: **the democratization of elite technology**, **mathematical objectivity**, and **human-centered efficiency**.
 
-#### <samp>> *DEMOCRATIZING ELITE TECHNOLOGY*</samp>
+### <samp>> *DEMOCRATIZING ELITE TECHNOLOGY*</samp>
 Brings **elite judging to local clubs, schools, and low-budget competitions**. By requiring only standard video inputs (like smartphone recordings), it eliminates the need for expensive multi-camera infrastructure or specialized biomechanical sensors.
 
-#### <samp>>*ELIMINATION OF SUBJECTIVITY*</samp>
+### <samp>> *ELIMINATION OF SUBJECTIVITY*</samp>
 Standardizes _E-Score_ through **mathematical analysis**. The system cross-references the athlete’s movements with official regulations, ensuring fair and unbiased scoring that protects gymnasts from human fatigue or split-second oversights.
 
-#### <samp>>*WORKFLOW EFFICIENCY*</samp>
+### <samp>>*WORKFLOW EFFICIENCY*</samp>
 Drastically reduces the time required to audit and review complex routines. With specialized **keyboard shortcuts**, judges can instantly navigate frame-by-frame and jump directly to critical execution peaks without breaking their workflow rhythm.
 
-#### <samp>>*IMMEDIATE ACTIONABLE FEEDBACK*</samp>
+### <samp>> *IMMEDIATE ACTIONABLE FEEDBACK*</samp>
 Enhances the training cycle by **exporting instant, structured chronological reports**. Coaches and athletes no longer just receive a single cold final number; they get a timestamped breakdown of exactly where and why points were deducted, **turning the evaluation into a powerful learning tool.**
 
 ---
@@ -111,10 +111,10 @@ gymnastics-error-detection/
 ```
 The software ecosystem is strictly structured into the following specialized directories and modules:
 
-### <samp>>*MAIN ENTRY POINT*</samp>
+### <samp>> *MAIN ENTRY POINT*</samp>
 * **`app.py`:** The main executable script that initializes the system, setting up the application environment and launching the graphical dashboard.
 
-### <samp>>*BACKEND MODULES (`backend/`)*</samp>
+### <samp>> *BACKEND MODULES (`backend/`)*</samp>
 * **`hpe/pose/`:** Acts as the data ingestion layer, managing the integration with *Meta*'s Sapiens-2B foundation model repository.
   * `main.py` processes raw video inputs and extract frame-by-frame joint coordinates into normalized JSON structures. 
   * `data.py` processes the raw spatial data and calculates joint angle for the acrobatic classificator.
@@ -130,7 +130,7 @@ The software ecosystem is strictly structured into the following specialized dir
   * `rules.py` maps the physical regulations of the official FIG *Code of Points* into geometric constraints.
   * `evaluator.py` processes these values in the new generated class `AcrobaticEvaluator` to calculate specific penalty weights (*Minor, Medium, Severe*) and update the final *E-Score*.
 
-### <samp>>*GRAPHICAL USER INTERFACE LAYER (`gui/`)*</samp>
+### <samp>> *GRAPHICAL USER INTERFACE LAYER (`gui/`)*</samp>
 * **`interface.py`:** The core window wrapper built with the PyQt6 framework. It coordinates the asynchronous desktop event loop, structures the *Dual Viewport* display layout, and captures hotkey events.
 * **`components.py`:** Contains custom, reusable PyQt6 GUI elements and widgets (such as individual deduction logs, media buttons, or customized timelines) to keep `interface.py` clean and maintainable.
 * **`logic.py`:** Acts as the controller or "glue code" between the frontend state and the backend evaluation engine. It handles loading data stacks, processes undo/redo requests natively, and formats execution updates for the UI.
@@ -160,7 +160,7 @@ The system bridges neural network predictions with real-time geometric rule chec
 
 ---
 
-### <samp>>VISUAL AUDITING & CASE ANALYSIS</samp>
+### <samp>> *VISUAL AUDITING & CASE ANALYSIS*</samp>
 
 #### <samp>*Optimal Case: Element Detection & Deduction Mapping*</samp>
 The LSTM correctly classifies the acrobatic leap, isolates the exact geometric execution peak frame, and highlights joint infractions dynamically on the canvas. 
@@ -177,7 +177,7 @@ Due to the temporal boundaries of the dataset, a transition landing frame is fal
 
 ---
 
-### <samp>>*QUANTITATIVE METRICS & TRAINING REPORT*</samp>
+### <samp>> *QUANTITATIVE METRICS & TRAINING REPORT*</samp>
 
 All raw mathematical data, comparative benchmarks between Human Pose Estimation architectures (Sapiens-2B vs. YOLO vs. MediaPipe), and the LSTM confusion matrix have been offloaded to maintain a clean main workflow.
 

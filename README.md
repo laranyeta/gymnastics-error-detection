@@ -43,6 +43,9 @@ Instead of relying on rigid heuristics, the system processes raw video inputs th
 #### *BROUGHT TO THE REAL WORLD*
 
 The goal of this project is not to replace human judges, but to act as a **precise assistant**. The core of the application is an **interactive desktop dashboard** where the AI proposes timestamped deductions and kinematic breakdowns, while the human official retains ultimate control, seamlessly accepting or rejecting individual proposals via intuitive hotkeys. _**The result is a collaborative, objective, and auditable final E-Score.**_
+<h2 align="center">
+  <img width="800" height="556" alt="Image" src="https://github.com/user-attachments/assets/a2058db4-9d84-498c-b951-873cd2d2df5c" />
+</h2>
 
 ---
   

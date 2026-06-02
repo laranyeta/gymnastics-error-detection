@@ -14,33 +14,33 @@
 </p>
 
 <p align="center">
-  <a href="#About-The-Project">ABOUT THE PROJECT</a> •
-  <a href="#Key-Features">KEY FEATURES</a> •
-  <a href="#System Architecture">SYSTEM ARCHITECTURE</a> •
-  <a href="#Repository Structure">REPOSITORY STRUCTURE</a> •
-  <a href="#Tech Stack">TECH STACK</a> •
-  <a href="#Results-Performance">RESULTS & PERFORMANCE</a> •
-  <a href="#How-To-Use">HOW TO USE</a> •
-  <a href="#License">LICENSE</a> •
-  <a href="#Credits">CREDITS</a>
+  <a href="#About-The-Project"><samp>ABOUT THE PROJECT</samp></a> •
+  <a href="#Key-Features"><samp>KEY FEATURES</samp></a> •
+  <a href="#System Architecture"><samp>SYSTEM ARCHITECTURE</samp></a> •
+  <a href="#Repository Structure"><samp>REPOSITORY STRUCTURE</samp></a> •
+  <a href="#Tech Stack"><samp>TECH STACK</samp></a> •
+  <a href="#Results-Performance"><samp>RESULTS & PERFORMANCE</samp></a> •
+  <a href="#How-To-Use"><samp>HOW TO USE</samp></a> •
+  <a href="#License"><samp>LICENSE/samp></a> •
+  <a href="#Credits"><samp>CREDITS/samp></a>
 </p>
 
 
 
-## ABOUT THE PROJECT
+## <samp>ABOUT THE PROJECT</samp>
 
 Traditional gymnastics judging is a highly demanding task. **Officials must track hyper-fast, complex joint movements in fractions of a second**, which makes the evaluation of the Execution Score *(E-Score)* naturally prone to **subjectivity** and cognitive overload.
 
 This project is an **AI-assisted judging system** designed to **automate**, **standardize** and bring **transparency** to artistic gymnastics evaluation. Developed as a Bachelor’s Thesis *(TFG)* at the *Universitat Autònoma de Barcelona (UAB)*, this project bridges the gap between **sports biomechanics** and **Computer Vision**.
 
-#### *HOW DOES IT WORK?*
+#### <samp>> *HOW DOES IT WORK?*</samp>
 
 Instead of relying on rigid heuristics, the system processes raw video inputs through a modular pipeline:
 1. **_Keypoint Extraction:_** Tracks the athlete's full-body joint topology frame-by-frame.
 2. **_Temporal Classification:_** Uses a Recurrent Neural Network (LSTM) to predict the specific acrobatic element (*Tuck, Pike, Split, or Straddle*) over time sequences.
 3. **_Biomechanical Audit:_** Automatically calculates angular vectors and joint displacements, cross-referencing them with official regulations to flag faults like bent knees OR insufficient flexion.
 
-#### *BROUGHT TO THE REAL WORLD*
+#### <samp>> *BROUGHT TO THE REAL WORLD*</samp>
 
 The goal of this project is not to replace human judges, but to act as a **precise assistant**. The core of the application is an **interactive desktop dashboard** where the AI proposes timestamped deductions and kinematic breakdowns, while the human official retains ultimate control, seamlessly accepting or rejecting individual proposals via intuitive hotkeys. _**The result is a collaborative, objective, and auditable final E-Score.**_
 <h2 align="center">
@@ -49,25 +49,25 @@ The goal of this project is not to replace human judges, but to act as a **preci
 
 ---
   
-## KEY FEATURES
+## <samp>KEY FEATURES</samp>
 
 To bridge the gap between high-performance technology and sports, the application is designed not just as a technical tool, but as a solution to real-world judging challenges. The core functionalities are structured around three main pillars: **the democratization of elite technology**, **mathematical objectivity**, and **human-centered efficiency**.
 
-#### *DEMOCRATIZING ELITE TECHNOLOGY*
+#### <samp>> *DEMOCRATIZING ELITE TECHNOLOGY*</samp>
 Brings **elite judging to local clubs, schools, and low-budget competitions**. By requiring only standard video inputs (like smartphone recordings), it eliminates the need for expensive multi-camera infrastructure or specialized biomechanical sensors.
 
-#### *ELIMINATION OF SUBJECTIVITY*
+#### <samp>>*ELIMINATION OF SUBJECTIVITY*</samp>
 Standardizes _E-Score_ through **mathematical analysis**. The system cross-references the athlete’s movements with official regulations, ensuring fair and unbiased scoring that protects gymnasts from human fatigue or split-second oversights.
 
-#### *WORKFLOW EFFICIENCY*
+#### <samp>>*WORKFLOW EFFICIENCY*</samp>
 Drastically reduces the time required to audit and review complex routines. With specialized **keyboard shortcuts**, judges can instantly navigate frame-by-frame and jump directly to critical execution peaks without breaking their workflow rhythm.
 
-#### *IMMEDIATE ACTIONABLE FEEDBACK*
+#### <samp>>*IMMEDIATE ACTIONABLE FEEDBACK*</samp>
 Enhances the training cycle by **exporting instant, structured chronological reports**. Coaches and athletes no longer just receive a single cold final number; they get a timestamped breakdown of exactly where and why points were deducted, **turning the evaluation into a powerful learning tool.**
 
 ---
 
-## SYSTEM ARCHITECTURE
+## <samp>SYSTEM ARCHITECTURE</samp>
 
 The project is designed following a **modular software architecture** that ensures a strict separation of concerns. The system isolates deep learning inference, temporal sequence classification, and geometric biomechanical auditing from the graphical user interface.
 
@@ -76,7 +76,7 @@ A complete diagram of the modular architecture and package interaction can be fo
 <img width="800" height="800" alt="Block Diagram" src="https://github.com/user-attachments/assets/4e8b7be1-a867-4381-aa8d-10004d1eec4c" />
 
 ---
-## REPOSITORY STRUCTURE
+## <samp>REPOSITORY STRUCTURE</samp>
 
 The software ecosystem is strictly structured into the following specialized directories and modules:
 
@@ -109,10 +109,10 @@ gymnastics-error-detection/
 ```
 The software ecosystem is strictly structured into the following specialized directories and modules:
 
-##### *MAIN ENTRY POINT*
+##### <samp>>*MAIN ENTRY POINT*</samp>
 * **`app.py`:** The main executable script that initializes the system, setting up the application environment and launching the graphical dashboard.
 
-##### *BACKEND MODULES (`backend/`)*
+##### <samp>>*BACKEND MODULES (`backend/`)*</samp>
 * **`hpe/pose/`:** Acts as the data ingestion layer, managing the integration with *Meta*'s Sapiens-2B foundation model repository.
   * `main.py` processes raw video inputs and extract frame-by-frame joint coordinates into normalized JSON structures. 
   * `data.py` processes the raw spatial data and calculates joint angle for the acrobatic classificator.
@@ -128,7 +128,7 @@ The software ecosystem is strictly structured into the following specialized dir
   * `rules.py` maps the physical regulations of the official FIG *Code of Points* into geometric constraints.
   * `evaluator.py` processes these values in the new generated class `AcrobaticEvaluator` to calculate specific penalty weights (*Minor, Medium, Severe*) and update the final *E-Score*.
 
-##### *GRAPHICAL USER INTERFACE LAYER (`gui/`)*
+##### <samp>>*GRAPHICAL USER INTERFACE LAYER (`gui/`)*</samp>
 * **`interface.py`:** The core window wrapper built with the PyQt6 framework. It coordinates the asynchronous desktop event loop, structures the *Dual Viewport* display layout, and captures hotkey events.
 * **`components.py`:** Contains custom, reusable PyQt6 GUI elements and widgets (such as individual deduction logs, media buttons, or customized timelines) to keep `interface.py` clean and maintainable.
 * **`logic.py`:** Acts as the controller or "glue code" between the frontend state and the backend evaluation engine. It handles loading data stacks, processes undo/redo requests natively, and formats execution updates for the UI.
@@ -137,7 +137,7 @@ The software ecosystem is strictly structured into the following specialized dir
 
 ---
 
-## TECH STACK
+## <samp>TECH STACK</samp>
 
 The project is built entirely on Python, leveraging industry-standard libraries for *Deep Learning* inference, advanced Computer Vision, mathematical signal processing, and high-performance desktop engineering.
 
@@ -152,22 +152,22 @@ The project is built entirely on Python, leveraging industry-standard libraries 
 
 ---
 
-## RESULTS & PERFORMANCE
+## <samp>RESULTS & PERFORMANCE</samp>
 
 The system bridges neural network predictions with real-time geometric rule checking. Below is a visual analysis of the pipeline's performance, showcasing both optimal executions and critical edge cases processed by the application.
 
 ---
 
-#### VISUAL AUDITING & CASE ANALYSIS
+#### <samp>>VISUAL AUDITING & CASE ANALYSIS</samp>
 
-#### *Optimal Case: Element Detection & Deduction Mapping*
+#### <samp>*Optimal Case: Element Detection & Deduction Mapping*</samp>
 The LSTM correctly classifies the acrobatic leap, isolates the exact geometric execution peak frame, and highlights joint infractions dynamically on the canvas. 
 
 <img width="1274" height="452" alt="Correct Behaviour" src="https://github.com/user-attachments/assets/66655bac-215d-44c4-ac20-53c3e7822774" />
 
 > _**Biomechanical Result:**_ The system automatically maps the official FIG *Code of Points* thresholds, triggering the appropriate penalty colors (Green for Minor, Orange for Medium, Red for Severe).
 
-#### *Critical Case: Transition False Positive*
+#### <samp>*Critical Case: Transition False Positive*</samp>
 Due to the temporal boundaries of the dataset, a transition landing frame is falsely flagged as an active leap, forcing an artificial severe joint penalty due to the ground impact compression.
 <img width="1284" height="434" alt="Bad Behaviour" src="https://github.com/user-attachments/assets/f5a0e50a-61a2-4b3f-8b29-73c3b3496b0f" />
 
@@ -175,30 +175,30 @@ Due to the temporal boundaries of the dataset, a transition landing frame is fal
 
 ---
 
-#### *QUANTITATIVE METRICS & TRAINING REPORT*
+#### <samp>>*QUANTITATIVE METRICS & TRAINING REPORT*</samp>
 
 All raw mathematical data, comparative benchmarks between Human Pose Estimation architectures (Sapiens-2B vs. YOLO vs. MediaPipe), and the LSTM confusion matrix have been offloaded to maintain a clean main workflow.
 
 >**_Looking for the numbers?_** For an extensive breakdown of the accuracy scores, data augmentation techniques, and loss functions, please check the report [Metrics and Model Evaluation](./metrics/README.md).
 
 
-#### *COMPUTATIONAL PERFORMANCE & LATENCY*
+#### <samp>>*COMPUTATIONAL PERFORMANCE & LATENCY*</samp>
 * **Processing Cost:** Processing a continuous 1-minute and 20-second video routine (approx. 2400 frames) requires **3 to 4 hours** of execution utilizing an *NVIDIA GeForce RTX 2080 Ti* GPU.
 * **Engineering Trade-off:** This processing latency is a direct consequence of deploying a foundational model with 2 billion parameters Sapiens-2B. However, this trade-off is highly justified, as it provides the extreme anatomical robustness required to accurately track multi-axial athletic movements from low-cost, monocular standard camera devices, democratizing sports analytics for grassroots clubs.
 
 
 ---
 
-# How To Use
+## <samp>HOW TO USE</samp>
 wip
 
 ---
 
-# License
+## <samp> LICENSE </samp>
 wip
 
 ---
 
-# Credits
+## <samp> CREDITS </samp>
 wip
 

@@ -263,6 +263,13 @@ The Human Pose Estimation extraction module utilizes Meta's Sapiens-2B foundatio
 
 ---
 
-## <samp> CREDITS </samp>
-wip
+## <samp>CREDITS & ACKNOWLEDGMENTS</samp>
+
+This thesis and software project would not have been possible without the support, resources, and encouragement provided by several key people and institutions:
+
+> <samp>**Coen Antens *(Project Tutor)*:**</samp> For trusting the viability of this ambitious idea from day one, and for providing invaluable guidance, academic support, and technical feedback throughout the development process at the Universitat Autònoma de Barcelona (UAB).
+
+> <samp>**CVC *(Internship Company)*:**</samp> For their continuous support and for facilitating the vital hardware resources, specifically the high-performance GPU infrastructure required to successfully run and test the heavy Deep Learning inference models.
+
+> <samp>**Family, Partner & Friends:**</samp> For their unconditional patience, encouragement, and emotional support during the countless long hours of research, debugging, and coding.
 

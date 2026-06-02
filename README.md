@@ -3,7 +3,7 @@
     <img width="1280" height="320" alt="banner" src="https://github.com/user-attachments/assets/2997131d-db53-418c-a8d2-741263ee8f52">
 </h2>
 
-<h3 align="center"><samp><i>Turning pixels into precision:</i> Democratizing elite gymnastics judging with Computer Vision</samp></h4>
+<h3 align="center"><samp><i>Turning pixels into precision:</i> Democratizing elite gymnastics judging with Computer Vision</samp></h3>
 
 <h4 align="center"> <samp><i>Bachelor's Thesis (TFG) - Universitat Autònoma de Barcelona (UAB)</i></h6>
 <p align="center"></samp>

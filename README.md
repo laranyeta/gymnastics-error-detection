@@ -192,7 +192,59 @@ All raw mathematical data, comparative benchmarks between Human Pose Estimation 
 ---
 
 ## <samp>HOW TO USE</samp>
-wip
+The project is designed to be accessible for both non-technical end-users (judges and coaches) and developers. You can either run the pre-packaged desktop application or clone the repository to run it from the source code.
+
+### <samp> > How do I run the app? </samp>
+
+#### <samp>Method A: Standalone Executable *(Recommended for End-Users)*</samp>
+You do not need to install Python or any dependencies. 
+1. Navigate to the **[Releases](../../releases)** tab on this GitHub repository.
+2. Download the compressed file for your operating system (`macOS`, `Windows`, or `Linux`).
+3. Extract the folder and double-click the `GymnasticsErrorDetector` executable to launch the application.
+
+#### <samp>Method B: Running from Source *(For Developers)*</samp>
+If you prefer to run the application natively via Python, ensure you have Python 3.9+ installed and follow these steps:
+
+```bash
+#clone the repository
+git clone [https://github.com/laranyeta/gymnastics-error-detection.git](https://github.com/laranyeta/gymnastics-error-detection.git)
+cd gymnastics-error-detection
+
+#create and activate a virtual environment (Optional but recommended)
+python3 -m venv venv
+source venv/bin/activate  #on windows use venv\Scripts\activate
+
+#install the required dependencies
+pip install -r requirements.txt
+
+#launch the application
+python3 -m app
+```
+### <samp> > How do I process my own videos? </samp>
+To evaluate a brand new gymnastics routine, the raw video must first be processed by the *Deep Learning* extraction layer to generate the kinematic coordinate JSON file.
+
+Because foundation models like Meta's Sapiens-2B require specific system architectures and heavy dependencies, we have isolated this process using Docker to prevent local dependency conflicts.
+
+#### <samp> 1  *NAVIGATE TO THE HPE MODULE*</samp>
+```
+cd backend/hpe
+```
+
+#### <samp> 2  *BUILD THE DOCKER IMAGE*</samp>
+We provide a ready-to-use Dockerfile that contains all necessary PyTorch and Computer Vision libraries.
+
+```
+docker build -t sapiens-extractor
+```
+
+#### <samp> 3  *RUN THE EXTRACTION*</samp>
+Mount your local video folder to the container and run the inference script. The script will output a normalized .json file containing the frame-by-frame joint coordinates.
+```
+docker run -v /path/to/your/local/videos:/workspace/data sapiens-extractor python main.py --input /workspace/data/my_video.mp4
+```
+
+#### <samp> 4  *LOAD IT TO THE APP*</samp>
+Place the newly generated `my_video.json` file in the same directory as your `my_video_skeleton.avi` video file. When you load the video into the desktop application, the system will automatically detect and pair the kinematic data!
 
 ---
 

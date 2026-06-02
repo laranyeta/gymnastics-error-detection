@@ -255,7 +255,11 @@ Place the newly generated `my_video.json` file in the same directory as your `my
 ---
 
 ## <samp> LICENSE </samp>
-wip
+
+This project is licensed under the **MIT License** *(see the **[LICENSE](LICENSE)** file for details)*
+
+#### <samp>> **Third-Party Intellectual Property:**</samp>
+The Human Pose Estimation extraction module utilizes Meta's Sapiens-2B foundation model. The weights and architecture of Sapiens are subject to Meta's specific licensing terms and non-commercial research agreements. Please refer to their official repository for detailed compliance information before deploying this module in production.
 
 ---
 

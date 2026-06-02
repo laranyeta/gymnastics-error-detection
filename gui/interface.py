@@ -400,17 +400,23 @@ class MainApp(QMainWindow):
 
     def update_log_for_current_frame(self):
         self.clear_layout(self.log_layout)
-        if self.current_frame in self.logic.active_acrobatic: #shows during the whole jump
+        if self.current_frame in self.logic.active_acrobatic: 
             acro_data = self.logic.active_acrobatic[self.current_frame]
+            acrobatic_name = acro_data["acrobatic"]
+            confidence = acro_data["confidence"]
+            
+            if self.current_frame in self.logic.errors_by_frame:
+                acrobatic_name = self.logic.errors_by_frame[self.current_frame]["acrobatic"]
+
             self.lbl_acrobatic_info.setStyleSheet(css.ACROBATIC_INFO_STYLE)
             self.lbl_confidence_info.setStyleSheet(css.CONFIDENCE_INFO_STYLE)
 
-            if acro_data["acrobatic"] == "Transition":
-                self.lbl_acrobatic_info.setText("<b>Detected Acrobatic:</b> TRANSITION")
+            if acrobatic_name == "Transition":
+                self.lbl_acrobatic_info.setText("<b>Detected Acrobatic:</b> TRANSITION") #mark as transition
             else:
-                self.lbl_acrobatic_info.setText(f"<b>Detected Acrobatic:</b> {acro_data['acrobatic'].upper()}")
+                self.lbl_acrobatic_info.setText(f"<b>Detected Acrobatic:</b> {acrobatic_name.upper()}")
                 
-            self.lbl_confidence_info.setText(f"<b>Confidence:</b> {acro_data['confidence']:.2f}%")
+            self.lbl_confidence_info.setText(f"<b>Confidence:</b> {confidence:.2f}%")
         else:
             self.lbl_acrobatic_info.setText("<b>Detected Acrobatic:</b> None")
             self.lbl_confidence_info.setText("<b>Confidence:</b> None")

@@ -165,10 +165,8 @@ The LSTM correctly classifies the acrobatic leap, isolates the exact geometric e
 > _**Biomechanical Result:**_ The system automatically maps the official FIG *Code of Points* thresholds, triggering the appropriate penalty colors (Green for Minor, Orange for Medium, Red for Severe).
 
 #### *Critical Case: Transition False Positive*
-Due to the temporal boundaries of the dataset, a transition landing frame is falsely flagged as an active leap, forcing an artificial severe joint penalty due to the ground impact compression[cite: 1].
-<h2 align="center">
-  <img width="422" height="296" alt="Bad Behaviour" src="https://github.com/user-attachments/assets/7e1e8bbf-9218-4609-a599-75da7fd21bfa" />
-</h2>
+Due to the temporal boundaries of the dataset, a transition landing frame is falsely flagged as an active leap, forcing an artificial severe joint penalty due to the ground impact compression.
+<img width="1284" height="434" alt="Bad Behaviour" src="https://github.com/user-attachments/assets/f5a0e50a-61a2-4b3f-8b29-73c3b3496b0f" />
 
 >_**Human-in-the-Loop Solution:**_ This technical limitation highlights the vital necessity of our collaborative architecture. The user interface allows judges to instantly bypass and override these localized temporal anomalies with a single click, keeping human expertise at the center of the scoring process.
 

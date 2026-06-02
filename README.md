@@ -160,14 +160,14 @@ The system bridges neural network predictions with real-time geometric rule chec
 ##### *Optimal Case: Element Detection & Deduction Mapping*
 The LSTM correctly classifies the acrobatic leap, isolates the exact geometric execution peak frame, and highlights joint infractions dynamically on the canvas. 
 
-<img width="500" height="500" alt="Correct behaviour" src="https://github.com/user-attachments/assets/66655bac-215d-44c4-ac20-53c3e7822774" />
+<img width="1274" height="452" alt="Image" src="https://github.com/user-attachments/assets/66655bac-215d-44c4-ac20-53c3e7822774" />
 
 > _**Biomechanical Result:**_ The system automatically maps the official FIG *Code of Points* thresholds, triggering the appropriate penalty colors (Green for Minor, Orange for Medium, Red for Severe).
 
 ##### *Critical Case: Transition False Positive*
 Due to the temporal boundaries of the dataset, a transition landing frame is falsely flagged as an active leap, forcing an artificial severe joint penalty due to the ground impact compression[cite: 1].
 
-<img width="500" height="500" alt="Bad behaviour" src="https://github.com/user-attachments/assets/7e1e8bbf-9218-4609-a599-75da7fd21bfa" />
+<img width="844" height="591" alt="Image" src="https://github.com/user-attachments/assets/7e1e8bbf-9218-4609-a599-75da7fd21bfa" />
 
 >_**Human-in-the-Loop Solution:**_ This technical limitation highlights the vital necessity of our collaborative architecture. The user interface allows judges to instantly bypass and override these localized temporal anomalies with a single click, keeping human expertise at the center of the scoring process.
 

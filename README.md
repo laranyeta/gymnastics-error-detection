@@ -9,8 +9,11 @@
 <p align="center"></samp>
   <img src="https://img.shields.io/badge/uab-tfg-blue?style=for-the-badge" alt="uab tfg">
 
-  <img src="https://img.shields.io/badge/status-wip-blue?style=for-the-badge" alt="status wip">
-  
+  <img src="https://img.shields.io/badge/status-done-green?style=for-the-badge" alt="status done">
+
+  <a href="docs/paper.pdf">
+    <img src="https://img.shields.io/badge/Paper-PDF-red?style=for-the-badge&logo=adobeacrobatreader&logoColor=white" alt="Read Thesis">
+  </a>
 </p>
 
 <p align="center">
@@ -42,12 +45,29 @@ Instead of relying on rigid heuristics, the system processes raw video inputs th
 <samp>2 **Temporal Classification:**</samp> Uses a Recurrent Neural Network (LSTM) to predict the specific acrobatic element (*Tuck, Pike, Split, or Straddle*) over time sequences. </br>
 <samp>3 **Biomechanical Audit:**</samp> Automatically calculates angular vectors and joint displacements, cross-referencing them with official regulations to flag faults like bent knees OR insufficient flexion.
 
+### <samp>> *THE ACROBATIC ELEMENTS*</samp>
+
+The system currently focuses on the **four foundational** aerial leap postures in gymnastics, analyzing the geometric execution of each at their peak frame:
+
+<p align="center">
+  <img width="902" height="199" alt="Image" src="https://github.com/user-attachments/assets/8c5d0be1-60f9-46da-b523-0125de9fe5a1" />
+</p>
+
+Sorted (left to right) acrobatics are:
+
+* **<samp>TUCK:</samp>** The gymnast brings their knees tightly to their chest, folding the body. The system penalizes loose tucks or insufficient knee flexion (angles >100°).
+* **<samp>PIKE:</samp>** The body is bent sharply at the hips with the legs kept perfectly straight. The AI monitors the hip angle for sufficient compression and penalizes bent knees.
+* **<samp>SPLIT:</samp>** An aerial leap where the legs are extended in opposite directions (front and back). The algorithm checks for a perfect 180° vectorial opening and straight knees.
+* **<samp>STRADDLE:</samp>** A leap where the legs are extended laterally (sideways) rather than front-to-back. Similar to the split, the system calculates the peak angular opening and knee straightness.
+
 ### <samp>> *BROUGHT TO THE REAL WORLD*</samp>
 
 The goal of this project is not to replace human judges, but to act as a **precise assistant**. The core of the application is an **interactive desktop dashboard** where the AI proposes timestamped deductions and kinematic breakdowns, while the human official retains ultimate control, seamlessly accepting or rejecting individual proposals via intuitive hotkeys. _**The result is a collaborative, objective, and auditable final E-Score.**_
 <h2 align="center">
   <img width="800" height="556" alt="Image" src="https://github.com/user-attachments/assets/a2058db4-9d84-498c-b951-873cd2d2df5c" />
 </h2>
+
+> _<samp>**READ THE FULL RESEARCH PAPER:**</samp> The complete mathematical methodology, model training logs, and full FIG Code of Points geometric mapping can be found in the **[Official Thesis Document (PDF)](docs/paper.pdf)**_.
 
 ---
   

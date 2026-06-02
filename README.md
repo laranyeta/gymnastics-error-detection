@@ -158,8 +158,6 @@ The project is built entirely on Python, leveraging industry-standard libraries 
 
 The system bridges neural network predictions with real-time geometric rule checking. Below is a visual analysis of the pipeline's performance, showcasing both optimal executions and critical edge cases processed by the application.
 
----
-
 ### <samp>> *VISUAL AUDITING & CASE ANALYSIS*</samp>
 
 #### <samp>*OPTIMAL CASE: Element Detection & Deduction Mapping*</samp>
@@ -184,7 +182,7 @@ All raw mathematical data, comparative benchmarks between Human Pose Estimation 
 >**_<samp>LOOKING FOR THE NUMBERS?</samp>_** For an extensive breakdown of the accuracy scores, data augmentation techniques, and loss functions, please check the report [Metrics and Model Evaluation](./metrics/README.md).
 
 
-### <samp>>*COMPUTATIONAL PERFORMANCE & LATENCY*</samp>
+### <samp>> *COMPUTATIONAL PERFORMANCE & LATENCY*</samp>
 * **<samp>Processing Cost:</samp>** Processing a continuous 1-minute and 20-second video routine (approx. 2400 frames) requires **3 to 4 hours** of execution utilizing an *NVIDIA GeForce RTX 2080 Ti* GPU.
 * **<samp>Engineering Trade-off:</samp>** This processing latency is a direct consequence of deploying a foundational model with 2 billion parameters Sapiens-2B. However, this trade-off is highly justified, as it provides the extreme anatomical robustness required to accurately track multi-axial athletic movements from low-cost, monocular standard camera devices, democratizing sports analytics for grassroots clubs.
 
@@ -194,7 +192,7 @@ All raw mathematical data, comparative benchmarks between Human Pose Estimation 
 ## <samp>HOW TO USE</samp>
 The project is designed to be accessible for both non-technical end-users (judges and coaches) and developers. You can either run the pre-packaged desktop application or clone the repository to run it from the source code.
 
-### <samp> > How do I run the app? </samp>
+### <samp> > HOW DO I RUN THE APP? </samp>
 
 ### <samp>Method A: Standalone Executable *(Recommended for End-Users)*</samp>
 You do not need to install Python or any dependencies. 
@@ -220,7 +218,7 @@ pip install -r requirements.txt
 #launch the application
 python3 -m app
 ```
-### <samp> > How do I process my own videos? </samp>
+### <samp> > HOW DO I PROCESS MY OWN VIDEOS? </samp>
 To evaluate a brand new gymnastics routine, the raw video must first be processed by the *Deep Learning* extraction layer to generate the kinematic coordinate JSON file.
 
 Because foundation models like Meta's Sapiens-2B require specific system architectures and heavy dependencies, we have isolated this process using Docker to prevent local dependency conflicts.

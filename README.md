@@ -37,9 +37,9 @@ This project is an **AI-assisted judging system** designed to **automate**, **st
 
 ### <samp>> *HOW DOES IT WORK?*</samp>
 
-Instead of relying on rigid heuristics, the system processes raw video inputs through a modular pipeline:
-<samp>1 **Keypoint Extraction:**</samp> Tracks the athlete's full-body joint topology frame-by-frame.
-<samp>2 **Temporal Classification:**</samp> Uses a Recurrent Neural Network (LSTM) to predict the specific acrobatic element (*Tuck, Pike, Split, or Straddle*) over time sequences.
+Instead of relying on rigid heuristics, the system processes raw video inputs through a modular pipeline:</br>
+<samp>1 **Keypoint Extraction:**</samp> Tracks the athlete's full-body joint topology frame-by-frame.</br>
+<samp>2 **Temporal Classification:**</samp> Uses a Recurrent Neural Network (LSTM) to predict the specific acrobatic element (*Tuck, Pike, Split, or Straddle*) over time sequences. </br>
 <samp>3 **Biomechanical Audit:**</samp> Automatically calculates angular vectors and joint displacements, cross-referencing them with official regulations to flag faults like bent knees OR insufficient flexion.
 
 ### <samp>> *BROUGHT TO THE REAL WORLD*</samp>

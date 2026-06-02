@@ -71,7 +71,7 @@ Enhances the training cycle by **exporting instant, structured chronological rep
 
 ## <samp>SYSTEM ARCHITECTURE</samp>
 
-The project is designed following a **modular software architecture** that ensures a strict separation of concerns. The system isolates deep learning inference, temporal sequence classification, and geometric biomechanical auditing from the graphical user interface.
+The project is designed following a **modular software architecture** that ensures a strict separation of concerns. The system isolates *Deep Learning* inference, temporal sequence classification, and geometric biomechanical auditing from the graphical user interface.
 
 A complete diagram of the modular architecture and package interaction can be found below.
 
@@ -119,7 +119,7 @@ The software ecosystem is strictly structured into the following specialized dir
   * `main.py` processes raw video inputs and extract frame-by-frame joint coordinates into normalized JSON structures. 
   * `data.py` processes the raw spatial data and calculates joint angle for the acrobatic classificator.
   * `vision.py` handles spatial interpolation and *Savitzky-Golay* filtering to guarantee skeleton stability and *KNN Imputation* to assess *frame-dropping*.
-* **`rnn/`:** The temporal processing unit. It takes the sequential `.json` coordinates, structures them into fixed temporal blocks, and feeds them into a trained Long Short-Term Memory (LSTM) network to classify active acrobatic elements (*Tuck, Pike, Split, Straddle*) with an associated confidence percentage.
+* **`rnn/`:** The temporal processing unit. It takes the sequential JSON coordinates, structures them into fixed temporal blocks, and feeds them into a trained Long Short-Term Memory (LSTM) network to classify active acrobatic elements (*Tuck, Pike, Split, Straddle*) with an associated confidence percentage.
   * `model.py` calls the LSTM model into the `RNNAcrobaticClassificator` class with customized parameters.
   * `process.py` structures JSON data into fixed temporal blocks and data augmentation logic for the main video dataset.
   * `train.py` trains the LSTM model generating the `best.pth` checkpoint file.
@@ -181,12 +181,12 @@ Due to the temporal boundaries of the dataset, a transition landing frame is fal
 
 All raw mathematical data, comparative benchmarks between Human Pose Estimation architectures (Sapiens-2B vs. YOLO vs. MediaPipe), and the LSTM confusion matrix have been offloaded to maintain a clean main workflow.
 
->**_Looking for the numbers?_** For an extensive breakdown of the accuracy scores, data augmentation techniques, and loss functions, please check the report [Metrics and Model Evaluation](./metrics/README.md).
+>**_<samp>LOOKING FOR THE NUMBERS?</samp>_** For an extensive breakdown of the accuracy scores, data augmentation techniques, and loss functions, please check the report [Metrics and Model Evaluation](./metrics/README.md).
 
 
 ### <samp>>*COMPUTATIONAL PERFORMANCE & LATENCY*</samp>
-* **Processing Cost:** Processing a continuous 1-minute and 20-second video routine (approx. 2400 frames) requires **3 to 4 hours** of execution utilizing an *NVIDIA GeForce RTX 2080 Ti* GPU.
-* **Engineering Trade-off:** This processing latency is a direct consequence of deploying a foundational model with 2 billion parameters Sapiens-2B. However, this trade-off is highly justified, as it provides the extreme anatomical robustness required to accurately track multi-axial athletic movements from low-cost, monocular standard camera devices, democratizing sports analytics for grassroots clubs.
+* **<samp>Processing Cost:</samp>** Processing a continuous 1-minute and 20-second video routine (approx. 2400 frames) requires **3 to 4 hours** of execution utilizing an *NVIDIA GeForce RTX 2080 Ti* GPU.
+* **<samp>Engineering Trade-off:</samp>** This processing latency is a direct consequence of deploying a foundational model with 2 billion parameters Sapiens-2B. However, this trade-off is highly justified, as it provides the extreme anatomical robustness required to accurately track multi-axial athletic movements from low-cost, monocular standard camera devices, democratizing sports analytics for grassroots clubs.
 
 
 ---
@@ -196,13 +196,13 @@ The project is designed to be accessible for both non-technical end-users (judge
 
 ### <samp> > How do I run the app? </samp>
 
-#### <samp>Method A: Standalone Executable *(Recommended for End-Users)*</samp>
+### <samp>Method A: Standalone Executable *(Recommended for End-Users)*</samp>
 You do not need to install Python or any dependencies. 
 1. Navigate to the **[Releases](../../releases)** tab on this GitHub repository.
 2. Download the compressed file for your operating system (`macOS`, `Windows`, or `Linux`).
 3. Extract the folder and double-click the `GymnasticsErrorDetector` executable to launch the application.
 
-#### <samp>Method B: Running from Source *(For Developers)*</samp>
+### <samp>Method B: Running from Source *(For Developers)*</samp>
 If you prefer to run the application natively via Python, ensure you have Python 3.9+ installed and follow these steps:
 
 ```bash

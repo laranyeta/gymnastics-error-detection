@@ -83,13 +83,19 @@ gymnastics-error-detection/
 ├── backend/
 │   ├── hpe/
 │   │   └── pose/
+│   │       ├── main.py
+│   │       └── utils/
+│   │           ├── data.py
+│   │           └── vision.py 
 │   ├── rnn/
 │   │   ├── model.py
+│   │   ├── process.py
+│   │   ├── train.py
 │   │   ├── predict.py
-│   │   └── train.py
+│   │   ├── evaluate.py
+│   │   └── score.py
 │   └── scoring/
 │       ├── rules.py
-│       ├── score.py
 │       └── evaluator.py
 └── gui/
     ├── assets/
@@ -104,12 +110,20 @@ The software ecosystem is strictly structured into the following specialized dir
 * **`app.py`:** The main executable script that initializes the system, setting up the application environment and launching the graphical dashboard.
 
 ##### *BACKEND MODULES (`backend/`)*
-* **`hpe/pose/`:** Acts as the data ingestion layer. It manages the integration with Meta's Sapiens-2B foundation model repository to process raw video inputs (`.mp4`/`.avi`) and extract frame-by-frame joint coordinates into normalized `.json` structures. It also handles spatial interpolation and Savitzky-Golay filtering via `utils/` to guarantee skeleton stability.
-* **`rnn/` (`model.py`, `predict.py`, `train.py`):** The temporal processing unit. It takes the sequential `.json` coordinates, structures them into fixed temporal blocks, and feeds them into a trained Long Short-Term Memory (LSTM) network to classify active acrobatic elements (*Tuck, Pike, Split, Straddle*) with an associated confidence percentage.
+* **`hpe/pose/`:** Acts as the data ingestion layer, managing the integration with *Meta*'s Sapiens-2B foundation model repository.
+  * `main.py` processes raw video inputs and extract frame-by-frame joint coordinates into normalized JSON structures. 
+  * `data.py` processes the raw spatial data and calculates joint angle for the acrobatic classificator.
+  * `vision.py` handles spatial interpolation and *Savitzky-Golay* filtering to guarantee skeleton stability and *KNN Imputation* to assess *frame-dropping*.
+* **`rnn/`:** The temporal processing unit. It takes the sequential `.json` coordinates, structures them into fixed temporal blocks, and feeds them into a trained Long Short-Term Memory (LSTM) network to classify active acrobatic elements (*Tuck, Pike, Split, Straddle*) with an associated confidence percentage.
+  * `model.py` calls the LSTM model into the `RNNAcrobaticClassificator` class with customized parameters.
+  * `process.py` structures JSON data into fixed temporal blocks and data augmentation logic for the main video dataset.
+  * `train.py` trains the LSTM model generating the `best.pth` checkpoint file.
+  * `predict.py` runs an inference on a singular frame, returning predicted class and confidence.
+  * `evaluate.py` creates confusion matrix and generates metrics to evaluate the trained LSTM model on our dataset
+  * `score.py` builds the *Virtual Pelvis* anchor point and calculates vectorial angles at execution peaks.
 * **`scoring/`:** The biomechanical audit engine. 
   * `rules.py` maps the physical regulations of the official FIG *Code of Points* into geometric constraints.
-  * `score.py` builds the *Virtual Pelvis* anchor point and calculates vectorial angles at execution peaks.
-  * `evaluator.py` (`AcrobaticEvaluator`) processes these values to calculate specific penalty weights (*Minor, Medium, Severe*) and update the final *E-Score*.
+  * `evaluator.py` processes these values in the new generated class `AcrobaticEvaluator` to calculate specific penalty weights (*Minor, Medium, Severe*) and update the final *E-Score*.
 
 ##### *GRAPHICAL USER INTERFACE LAYER (`gui/`)*
 * **`interface.py`:** The core window wrapper built with the PyQt6 framework. It coordinates the asynchronous desktop event loop, structures the *Dual Viewport* display layout, and captures hotkey events.
@@ -122,7 +136,7 @@ The software ecosystem is strictly structured into the following specialized dir
 
 ## TECH STACK
 
-The project is built entirely on Python, leveraging industry-standard libraries for Deep Learning inference, advanced computer vision, mathematical signal processing, and high-performance desktop engineering.
+The project is built entirely on Python, leveraging industry-standard libraries for *Deep Learning* inference, advanced Computer Vision, mathematical signal processing, and high-performance desktop engineering.
 
 | TECHNOLOGY | CATEGORY | ROLE |
 | :--- | :--- | :--- |
@@ -146,14 +160,14 @@ The system bridges neural network predictions with real-time geometric rule chec
 ##### *Optimal Case: Element Detection & Deduction Mapping*
 The LSTM correctly classifies the acrobatic leap, isolates the exact geometric execution peak frame, and highlights joint infractions dynamically on the canvas. 
 
-[add image]
+<img width="500" height="500" alt="Correct behaviour" src="https://github.com/user-attachments/assets/66655bac-215d-44c4-ac20-53c3e7822774" />
 
 > _**Biomechanical Result:**_ The system automatically maps the official FIG *Code of Points* thresholds, triggering the appropriate penalty colors (Green for Minor, Orange for Medium, Red for Severe).
 
 ##### *Critical Case: Transition False Positive*
 Due to the temporal boundaries of the dataset, a transition landing frame is falsely flagged as an active leap, forcing an artificial severe joint penalty due to the ground impact compression[cite: 1].
 
-[add image]
+<img width="500" height="500" alt="Bad behaviour" src="https://github.com/user-attachments/assets/7e1e8bbf-9218-4609-a599-75da7fd21bfa" />
 
 >_**Human-in-the-Loop Solution:**_ This technical limitation highlights the vital necessity of our collaborative architecture. The user interface allows judges to instantly bypass and override these localized temporal anomalies with a single click, keeping human expertise at the center of the scoring process.
 

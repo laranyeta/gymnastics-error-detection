@@ -21,13 +21,13 @@
   <sub>
     <a href="#About-The-Project"><samp>ABOUT THE PROJECT</samp></a> •
     <a href="#Key-Features"><samp>KEY FEATURES</samp></a> •
-    <a href="#System Architecture"><samp>SYSTEM ARCHITECTURE</samp></a> •
-    <a href="#Repository Structure"><samp>REPOSITORY STRUCTURE</samp></a> •
-    <a href="#Tech Stack"><samp>TECH STACK</samp></a> •
-    <a href="#Results-Performance"><samp>RESULTS & PERFORMANCE</samp></a> •
+    <a href="#System-Architecture"><samp>SYSTEM ARCHITECTURE</samp></a> •
+    <a href="#Repository-Structure"><samp>REPOSITORY STRUCTURE</samp></a> •
+    <a href="#Tech-Stack"><samp>TECH STACK</samp></a> •
+    <a href="#Results-And-Performance"><samp>RESULTS & PERFORMANCE</samp></a> •
     <a href="#How-To-Use"><samp>HOW TO USE</samp></a> •
     <a href="#License"><samp>LICENSE</samp></a> •
-    <a href="#Credits"><samp>CREDITS</samp></a>
+    <a href="#Credit-And-Acknowledgements"><samp>CREDITS</samp></a>
   </sub>
 </p>
 
@@ -282,7 +282,7 @@ The Human Pose Estimation extraction module utilizes Meta's Sapiens-2B foundatio
 
 ---
 
-## <samp>CREDITS & ACKNOWLEDGMENTS</samp>
+## <samp>CREDITS & ACKNOWLEDGEMENTS</samp>
 
 This thesis and software project would not have been possible without the support, resources, and encouragement provided by several key people and institutions:
 

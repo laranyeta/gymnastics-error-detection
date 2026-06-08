@@ -1,5 +1,4 @@
 import os
-import sys
 import cv2
 import gui.style as css
 
@@ -8,6 +7,9 @@ from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QMessageBox, QScrollArea)
 from PyQt6.QtCore import Qt, QTimer, QSize
 from PyQt6.QtGui import QImage, QPixmap, QAction, QIcon, QKeySequence, QShortcut
+from PyQt6.QtGui import QTextDocument, QPageLayout, QPageSize, QPdfWriter
+from PyQt6.QtCore import QMarginsF
+
 from backend.rnn.predict import resource_path
 from backend.rnn.score import generate_skeleton_canvas
 from gui.components import DeductionWidget
@@ -477,15 +479,102 @@ class MainApp(QMainWindow):
         self.refresh_display()
     
     def export_report(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Save Report", "", "Text Files (*.txt)")
+        filename, _ = QFileDialog.getSaveFileName(self, "Save PDF Report", "", "PDF Files (*.pdf);;All Files (*)")
+        
         if filename:
-            with open(filename, "w") as f:
-                f.write(f"GYMNASTICS PERFORMANCE REPORT\n")
-                f.write(f"=============================\n\n")
-                f.write(f"FINAL E-SCORE: {self.logic.e_score:.1f}\n\n")
-                f.write(f"Deductions Breakdown:\n")
+            if not filename.endswith('.pdf'):
+                filename += '.pdf'
+                
+            html_content = f"""
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #2c3e50; margin: 30px; }}
+                    h1 {{ color: #1a252f; border-bottom: 2px solid #bdc3c7; padding-bottom: 8px; font-size: 24px; }}
+                    h3 {{ color: #34495e; margin-top: 25px; font-size: 16px; border-bottom: 1px solid #ecf0f1; padding-bottom: 5px; }}
+                    
+                    .score-box {{ background-color: #fff; border-left: 4px solid #3498db; padding: 12px; margin: 20px 0; border-radius: 0 6px 6px 0; }}
+                    .score-title {{ font-size: 11px; color: #57606f; font-weight: bold; letter-spacing: 1px; }}
+                    .score-value {{ font-size: 26px; font-weight: bold; color: #2c3e50; margin-top: 5px; }}
+                    
+                    .frame-title {{ font-size: 13px; font-weight: bold; color: #2c3e50; margin-top: 15px; background-color: #f0f3f4; padding: 12px 16px; border-radius: 8px; }}
+                    .deduction-table {{ width: 100%; border-collapse: collapse; margin-top: 5px; }}
+                    .deduction-row {{ border-bottom: 1px solid #f1f2f6; }}
+                    .deduction-text {{ font-size: 12px; color: #57606f; padding: 10px 4px; }}
+                    
+                    .badge {{ font-size: 10px; font-weight: bold; color: white; padding: 6px 12px; border-radius: 6px; text-align: center; display: inline-block; }}
+                    .badge-minor {{ background-color: #2ecc71; }}
+                    .badge-medium {{ background-color: #e67e22; }}
+                    .badge-severe {{ background-color: #e74c3c; }}
+                    .badge-accepted {{ background-color: #81c784; padding: 6px 14px; border-radius: 8px; }}
+                    .badge-rejected {{ background-color: #e57373; padding: 6px 14px; border-radius: 8px; }}
+                </style>
+            </head>
+            <body>
+                <h1>Gymnastics Performance Report</h1>
+                
+                <div class="score-box">
+                    <div class="score-title">FINAL E-SCORE</div>
+                    <div class="score-value">{self.logic.e_score:.1f}</div>
+                </div>
+                
+                <h3>Deductions Breakdown</h3>
+            """
+            
+            if not self.logic.errors_by_frame:
+                html_content += "<p style='color: #7f8c8d; font-style: italic; font-size: 12px;'>No acrobatics recorded.</p>"
+            else:
                 for frame, data in self.logic.errors_by_frame.items():
-                    f.write(f"- Frame {frame} ({data['acrobatic'].upper()}): \n")
-                    for r in data["reasons"]:
-                        f.write(f"  [{r['status'].upper()}] {r['text']}\n")
-            QMessageBox.information(self, "Success", "Report exported successfully!")
+                    html_content += f"""
+                    <div class="frame-title">Frame {frame} | {data['acrobatic'].upper()}</div>
+                    """
+                    
+                    reasons = data.get("reasons", [])
+                    if not reasons:
+                        html_content += "<p style='color: #7f8c8d; font-style: italic; font-size: 12px; margin: 10px 0 10px 5px;'>Perfect execution. No deductions.</p>"
+                    
+                    else:
+                        html_content += '<table class="deduction-table">'
+                        for r in reasons:
+                            status = r['status'].upper()
+                            
+                            if status == "SEVERE":
+                                badge_class = "badge-severe"
+                            elif status == "MEDIUM":
+                                badge_class = "badge-medium"
+                            elif status == "MINOR":
+                                badge_class = "badge-minor"
+                            elif status == "ACCEPTED":
+                                badge_class = "badge-accepted"
+                            elif status == "REJECTED":
+                                badge_class = "badge-rejected"
+                            else:
+                                badge_class = "badge-minor"
+                                
+                            html_content += f"""
+                            <tr class="deduction-row">
+                                <td style="width: 95px; padding: 10px 0;">
+                                    <span class="badge {badge_class}">{status}</span>
+                                </td>
+                                <td class="deduction-text">{r['text']}</td>
+                            </tr>
+                            """
+                        html_content += "</table>"
+                    
+            html_content += """
+            </body>
+            </html>
+            """
+            document = QTextDocument()
+            document.setHtml(html_content)
+            
+            writer = QPdfWriter(filename)
+            writer.setResolution(96)
+            layout = QPageLayout()
+            layout.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+            layout.setOrientation(QPageLayout.Orientation.Portrait)
+            layout.setMargins(QMarginsF(5, 5, 5, 5))
+            writer.setPageLayout(layout)
+
+            document.print(writer)            
+            QMessageBox.information(self, "Success", "PDF report exported successfully!")

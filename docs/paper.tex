@@ -42,7 +42,7 @@
 {
    \fancyhf{}
    \fancyhead[L]{\scriptsize TFG EN ENGINYERIA INFORMÀTICA, ESCOLA D'ENGINYERIA (EE), UNIVERSITAT AUTÒNOMA DE BARCELONA (UAB)}
-   \fancyfoot[C]{\scriptsize Maig de 2026, Escola d'Enginyeria (UAB)}
+   \fancyfoot[C]{\scriptsize Juny de 2026, Escola d'Enginyeria (UAB)} % Actualitzat a Juny/Informe Final
 }
 
 \renewcommand{\headrulewidth}{0pt}
@@ -98,20 +98,16 @@ Tot i que la intel·ligència artificial ja s'utilitza a competicions Olímpique
 
 \section{Objectius}
 
-L'objectiu principal d'aquest projecte és democratitzar l'accés a l'anàlisi esportiva desenvolupant un sistema automàtic de detecció d'errors basat en Visió per Computador de baix cost a partir de vídeos monoculars.
+L'objectiu principal d'aquest projecte és democratitzar l'accés a l'anàlisi esportiva d'elit mitjançant el desenvolupament d'un sistema d'assistència a l'arbitratge basat en Visió per Computador de baix cost a partir de vídeos monoculars. 
 
-Per tal d'assolir aquesta fita principal, i garantint una anàlisi rigorosa de com els models d'intel·ligència artificial s'adapten a la complexitat de les acrobàcies d'alta velocitat, es defineixen els següents objectius específics:
+Per tal d'assolir aquesta fita, el projecte s'estructura en tres objectius específics fonamentals:
 
 \begin{enumerate}
-    \item \textbf{Auditoria i Selecció de l'Arquitectura:} Avaluar comparativament l'eficiència de diferents models de \textit{Human Pose Estimation} (\textit{HPE}) per determinar la seva idoneïtat davant l'oclusió i l'alta velocitat pròpia de les acrobàcies executades per la gimnasta.
+    \item \textbf{Democratització Tecnològica:} Validar un \textit{pipeline} d'extracció de característiques (\textit{Human Pose Estimation}) capaç de suportar oclusions i inversions complexes utilitzant únicament vídeo estàndard, evitant la dependència d'infraestructures de sensors 3D d'alt cost per a l'esport base.
 
-  \item \textbf{Estandardització Temporal i Classificació d'Acrobàcies:} Estructurar i normalitzar un \textit{dataset} d'entrenament mitjançant el retall de les seqüències d'acrobàcies a una longitud temporal fixa de 30 \textit{frames} per alimentar la xarxa neuronal recurrent \textit{Long Short-Term Memory} (\textit{LSTM}) per a la classificació.
+    \item \textbf{Objectivació Matemàtica de l'\textit{E-Scor}e:} Estandarditzar el judici d'execució traduint el Codi de Puntuació de la \textit{FIG} \cite{fig_rules} en restriccions geomètriques deterministes, recolzades per una classificació algorísmica temporal de les acrobàcies mitjançant xarxes neuronals recurrents (\textit{LSTM}).
 
-    \item \textbf{Implementació del \textit{Pipeline} i Suavitzat Temporal:} Integrar el model òptim per extreure l'esquelet \textit{frame} a \textit{frame}, aplicant tècniques d'interpolació espacial i temporal per eliminar el \textit{jitter} de la xarxa neuronal i assegurar la coherència biomecànica.
-
-    \item \textbf{Automatització de les Regles de Penalització:} Traduir les normatives geomètriques del Codi de Puntuació de la \textit{FIG} \cite{fig_rules} en llindars algorísmics (per exemple, angles màxims de flexió de genolls) per tal d'estimar automàticament les deduccions de l'atleta.
-
-    \item \textbf{Generació de \textit{Feedback} Visual i Interfície:} Desenvolupar una aplicació d'assistència al judici que integra una doble visualització (vídeo i esquelet) amb un sistema de codi de colors per ressaltar automàticament les infraccions tècniques, permetent al jutge validar o descartar les deduccions de l'algorisme.
+    \item \textbf{Interacció \textit{Human-in-the-Loop}:} Construir una aplicació d'escriptori col·laborativa que actuï com a assistent de precisió. La interfície ha de projectar el \textit{feedback} biomecànic mitjançant un codi de colors intuïtiu, reduint la càrrega cognitiva però mantenint el control absolut de l'avaluació en el jutge humà.
 \end{enumerate}
 
 \section{Estat de l'Art}
@@ -121,7 +117,7 @@ La \textit{Human Pose Estimation} (\textit{HPE}, o Estimació de Pose Humana) é
 \subsection{Història de la \textit{HPE}}
 Històricament, la comprensió de la figura humana va començar com la detecció d'objectes tradicional (\textit{Object Detection}), on els sistemes es limitaven a emmarcar l'individu dins d'una capsa delimitadora (\textit{bounding box}). Com a resposta a la manca d'informació biomecànica d'aquest enfocament, la recerca es va centrar en els mètodes basats en parts (\textit{Part-based models})\cite{partimagenet_2024}, que identificaven extremitats de manera independent per després intentar ajuntar-les fins a evolucionar cap a les topologies de punts clau actuals (vegeu la Figura \ref{fig:hpe_history}).
 
-L'autèntica revolució ha arribat amb les xarxes neuronals profundes, que permeten localitzar directament les coordenades espacials \textit{(x, y)} de cada articulació \cite{zheng_hpe_survey}, un salt tecnologíc impulsat inicialment per arquitectures pioneres com \textit{DeepPose} \cite{deeppose_2014}. 
+L'autèntica revolució ha arribat amb les xarxes neuronals profundes, que permeten localitzar directament les coordenades espacials \textit{(x, y)} de cada articulació \cite{zheng_hpe_survey}, un salt tecnològic impulsat inicialment per arquitectures pioneres com \textit{DeepPose} \cite{deeppose_2014}. 
 
 \begin{figure}[H]
     \centering
@@ -130,7 +126,7 @@ L'autèntica revolució ha arribat amb les xarxes neuronals profundes, que perme
     \label{fig:hpe_history}
 \end{figure}
 
-L'arquitectura exacta d'aquesta sortida depèn de la topologia anatòmica utlitzada: d'una banda, el format \textit{COCO} \cite{coco_dataset_2014} defineix un esquelet bàsic de 17 \textit{keypoints}, mentre que el format \textit{BlazePose} l'expandeix fins als 33 \textit{keypoints}, capturant amb detall les mans i els peus (vegeu la Figura \ref{fig:keypoint_mapping_art}).
+L'arquitectura exacta d'aquesta sortida depèn de la topologia anatòmica utilitzada: d'una banda, el format \textit{COCO} \cite{coco_dataset_2014} defineix un esquelet bàsic de 17 \textit{keypoints}, mentre que el format \textit{BlazePose} l'expandeix fins als 33 \textit{keypoints}, capturant amb detall les mans i els peus (vegeu la Figura \ref{fig:keypoint_mapping_art}).
 
 \begin{figure}[H]
     \centering
@@ -158,16 +154,16 @@ On $d_i$ és la distància euclidiana entre el punt predit i el real, $s$ és el
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{img/oks.png}
-    \caption{Representació visual del càlcul de l'OKS. Es defineixen els diferents radis de tolerància segons l'articulació ($k_i$) escalats per la mida de la persona ($s$). Imatge de referència adaptada de \cite{yolo_oks}.}
+    \caption{Representació visual del càlcul de l'OKS. Es defineixen els diferents radis de tolerància segons l'articulació ($k_i$) escalats per la mida de la persona ($s$).}
     \label{fig:oks_diagram}
 \end{figure}
 
 Aquesta mètrica permet calcular el \textit{mean Average Precision} (\textit{mAP}) i es relaciona amb indicadors de distància clau com el \textit{PCK} \cite{yang_pck_2013}, que són els valors que comparem en les auditories de models d'aquest projecte.
 
 \subsection{Fonaments del Suavitzat Temporal: Filtre Savitzky-Golay}
-En l'extracció de poses \textit{frame} a \textit{frame}, el soroll de la predicció pot generar vibracions artificials (\textit{jitter}). Per solucionar-ho, s'utilitzen filtres de suavitzat temporal, sent el filtre de \textit{Savitzky-Golay} \cite{savgol} un dels més utilitzats en el processament de senyal biomecànic.
+En l'extracció de poses \textit{frame} a \textit{frame}, el soroll de la predicció pot generar vibracions artificials (\textit{jitter}). Per solucionar-ho, s'utilitzen filtres de suavitzat temporal, d'entre els quals el filtre de \textit{Savitzky-Golay} \cite{savgol} resulta el més adient per a aquest projecte.
 
-L'algorisme realitza un ajust local d'un polinomi de grau $k$ sobre una finestra de dades de mida senar $n = 2m+1$. Aquest polinomi $p(i)$ es defineix matemàticament com:
+L'algorisme realitza un ajust local d'un polinomi de grau $k$ sobre una finestra de dades de mida senar $n = 2m+1$, on $n$ representa la longitud total de la finestra i $m$ és el nombre de punts a banda i banda del valor central. Aquest polinomi $p(i)$ es defineix matemàticament com:
 
 \begin{equation}
     p(i) = \sum_{j=0}^{k} c_j i^j
@@ -203,59 +199,55 @@ Aquest mecanisme de portes permet que la xarxa aprengui patrons seqüencials com
 
 \section{Metodologia}
 
-El desenvolupament d'aquest projecte segueix una metodologia que combina la gestió de processos àgils amb una selecció de tecnologies de Visió per Computador i intel·ligència artificial.
+El desenvolupament d'aquest projecte segueix una metodologia que combina la gestió de processos àgils amb una selecció tecnològica orientada a la Visió per Computador.
+
+\subsection{Metodologia de Desenvolupament}
+La gestió del projecte segueix una metodologia àgil basada en el sistema \textit{Kanban}, un enfocament iteratiu que aporta la flexibilitat necessària per adaptar-se als reptes tècnics i facilitar el testeig continu del codi. Com a eina central s'utilitza la plataforma \textit{Notion}, on s'estructura el flux de treball en estats de seguiment ("Per fer", "En curs", "Finalitzat"). 
+
+L'execució es divideix en fases seqüencials, aplicant la regla estricta de complir totes les tasques d'una iteració abans d'avançar a la següent. Així mateix, aquesta plataforma centralitza la gestió documental i el seguiment temporal mitjançant el diagrama de \textit{Gantt}, garantint un control dels terminis acadèmics.
 
 \subsection{Metodologia Tècnica}
-Per a la implementació del sistema, s'ha definit un ecosistema tecnològic basat en \textit{Python} com a llenguatge principal. Entre les eines més influents del projecte destaquen \textit{PyTorch}, utilitzat com a entorn de \textit{Deep Learning} per a la inferència del model \textit{Sapiens-2B} i l'entrenament de la xarxa \textit{LSTM}, i \textit{OpenCV}, que actua com a motor principal de visió per al tractament de \textit{frames} i el dibuix vectorial de l'esquelet.
+L'ecosistema tecnològic es fonamenta en \textit{Python} sota una arquitectura modular que separa la visió, la geometria i la interfície. El nucli empra \textit{PyTorch} per a la inferència del model \textit{Sapiens-2B} i l'entrenament de la xarxa \textit{LSTM}, juntament amb \textit{OpenCV} com a motor de visió per al tractament d'imatge i la renderització vectorial de l'esquelet. 
 
-Pel que fa al processament de senyal i dades estructurades, s'ha emprat \textit{SciPy} per a l'estabilització temporal de les coordenades mitjançant el filtre de \textit{Savitzky-Golay}, recolzant-se en llibreries estàndard d'anàlisi numèrica com \textit{NumPy} i \textit{Pandas}. Finalment, el desenvolupament de la interfície gràfica interactiva que connecta el motor de visió amb l'usuari s'ha programat mitjançant \textit{PyQt6}.
+Per al processament numèric i l'estabilització del senyal mitjançant el filtre , s'ha utilitzat \textit{SciPy} per al filtre de \textit{Savitzky-Golay}, recolzant-se en \textit{NumPy} i \textit{Pandas}, i \textit{Scikit-Learn} per a poder realitzar la imputació de dades per \textit{KNN}. Finalment, l'eina gràfica interactiva per al jutge es desenvolupa amb \textit{PyQt6}. 
 
-Aquesta selecció tecnològica permet una arquitectura modular on el motor de visió, la lògica d'avaluació geomètrica i la interfície d'usuari operen de manera integrada però independent.
-
-Així mateix, amb l'objectiu de garantir la transparència i la reproductibilitat del sistema, el codi font complet i el registre històric de modificacions s'han centralitzat en un repositori públic de GitHub, accessible a: \url{https://github.com/laranyeta/gymnastics-error-detection}.
+Amb l'objectiu de garantir la transparència i la reproductibilitat del sistema, el codi font complet s'ha centralitzat en un repositori públic de GitHub: \url{https://github.com/laranyeta/gymnastics-error-detection}.
 
 \section{Planificació}
-
-L'arquitectura del sistema i la planificació temporal s'han estructurat de manera conjunta en cinc fases seqüencials. Aquesta planificació fusiona les etapes d'extracció, processament de dades i disseny predictiu amb les fites d'avaluació continuada requerides per l'assignatura. Actualment, el projecte ha completat amb èxit la Fase 3 i es troba en ple desenvolupament de la Fase 4, complint amb els terminis establerts al cronograma original.
+El desenvolupament del projecte s'ha estructurat en cinc fases seqüencials, complint els terminis establerts (vegeu el diagrama de \textit{Gantt} a l'Apèndix \ref{apx:gantt}):
 
 \begin{itemize}
-    \item \textbf{Fase 1: Recerca i Viabilitat:} Definició de l'abast i comprensió del domini biomecànic. Estudi de l'Estat de l'Art en \textit{Human Pose Estimation} (\textit{HPE}). \textit{(Fase finalitzada)}.
-
-    \item \textbf{Fase 2: Implementació Base i Avaluació de Models:} Extracció robusta de coordenades amb \textit{Sapiens-2B}. A nivell de processament de senyal, s'ha implementat la interpolació espacial i el filtre \textit{Savitzky-Golay} per corregir el \textit{frame dropping} detectat en zones de baixa confiança, assegurant l'estabilitat de l'esquelet. \textit{(Fase finalitzada)}.
-
-    \item \textbf{Fase 3: Entrenament de Dades i Lògica:} Etapa nuclear finalitzada amb èxit. S'ha realitzat el \textit{data augmentation}, l'entrenament de la xarxa \textit{LSTM} per a la classificació d'acrobàcies i la implementació del motor de lògica de penalitzacions basat en el Codi de Puntuació de la \textit{FIG}. \textit{(Fase finalitzada)}.
-
-    \item \textbf{Fase 4: Interfície i Validació:} Desenvolupament de l'aplicació interactiva amb \textit{PyQt6} i el sistema de doble visualització (vídeo original i esquelet aïllat). S'ha implementat la \textit{sliding window} per a l'avaluació de rutines completes. \textit{(Fase actualment en execució)}.
-
-    \item \textbf{Fase 5: Tancament i Defensa:} Etapa final reservada per a la consolidació del codi, la redacció de la memòria final en format d'article acadèmic i la preparació de la defensa oral davant del tribunal.
+    \item \textbf{Fase 1: Recerca i Viabilitat.} Definició de l'abast i estudi de l'estat de l'art en models d'estimació de pose (\textit{HPE}).
+    
+    \item \textbf{Fase 2: Extracció i Processament.} Implementació de \textit{Sapiens-2B} i filtratge per a l'estabilitat espacial de l'esquelet.
+    
+    \item \textbf{Fase 3: Classificació i Lògica.} Entrenament de la xarxa \textit{LSTM} per detectar acrobàcies i programació del motor de deduccions (\textit{FIG}).
+    
+    \item \textbf{Fase 4: Interfície i Integració.} Desenvolupament de l'aplicació (\textit{PyQt6}) i avaluació de rutines contínues (\textit{Sliding Window}).
+    
+    \item \textbf{Fase 5: Tancament.} Redacció d'aquesta memòria acadèmica i preparació de la defensa.
 \end{itemize}
-
-Al desglossament de l'Apèndix \ref{apx:gantt} es detalla la temporalitat d'aquestes fases a través de la Taula \ref{tab:planificacio}, la distribució de les quals es complementa de forma visual mitjançant el diagrama de \textit{Gantt}.
 
 \section{Desenvolupament}
 
-Aquesta secció detalla l'execució tècnica del projecte, estructurada en el \textit{pipeline} complet de processament, des de l'estandardització de les dades fins al disseny conceptual de la interfície d'usuari.
+Aquesta secció detalla l'execució tècnica del projecte, estructurada en el \textit{pipeline} complet de processament, des de l'estandardització de les dades fins al disseny definitiu de la interfície d'usuari.
 
 \subsection{Arquitectura de Programari i Estructura de Mòduls}
 Per garantir la mantenibilitat, l'escalabilitat i una correcta separació de conceptes (\textit{separation of concerns}), el projecte s'ha dissenyat seguint una arquitectura modular. Com es detalla a l'Apèndix \ref{apx:arquitectura}, aquesta organització separa completament les tasques d'inferència de xarxes neuronals profundes, el processament geomètric de senyal i la representació gràfica de la interfície d'usuari.
 
 \subsection{Estandardització de l'Esquelet: Migració de Keypoints}
-Un cop seleccionat \textit{Sapiens-2B} com a motor d'extracció, decisió justificada per l'estudi de viabilitat empíric que es detalla a la Secció \ref{sec:resultats_viabilitat}, es va haver de resoldre un repte d'enginyeria crucial relacionat amb l'estructura de dades de l'esquelet virtual. El codi de processament geomètric i d'avaluació de l'\textit{E-Score} s'havia començat a desenvolupar inicialment utilitzant la llibreria \textit{MediaPipe}. 
+Després de seleccionar \textit{Sapiens-2B} com a motor d'extracció (Secció \ref{sec:resultats_viabilitat}), va sorgir un repte de compatibilitat estructural. El motor d'avaluació geomètrica de l'\textit{E-Score} s'havia dissenyat per a la topologia de 33 \textit{keypoints} de \textit{MediaPipe}, mentre que Sapiens opera amb els formats COCO.
 
-La problemàtica radicava en la divergència de formats d'anotació (\textit{topologies}):
-\begin{itemize}
-    \item \textbf{COCO (Format Sapiens):} El model estàndard de Sapiens utilitza la topologia COCO de 17 \textit{keypoints}. El principal inconvenient és la manca de punts de control als peus, elements biomecànics indispensables per avaluar l'obertura parabòlica en els salts (\textit{split} o \textit{straddle}) o les penalitzacions d'aterratge. D'altra banda, existeix la variant \textit{COCO WholeBody} de 133 \textit{keypoints}, un volum excessiu de dades que augmentaria els temps d'entrenament de la \textit{RNN} i de còmput.
-    \item \textbf{Topologia \textit{MediaPipe}:} Aquesta topologia utilitza una estructura de 33 \textit{keypoints}. Aquesta solució és ideal per al projecte, ja que inclou els peus (talons i puntes) i manté un volum de dades assequible per al processament seqüencial.
-\end{itemize}
+Això presentava un doble inconvenient: el format COCO estàndard (17 punts) no detecta els peus (indispensables per avaluar obertures i aterratges), mentre que la variant \textit{COCO WholeBody} (133 punts) sobrecarrega el temps d'entrenament de la xarxa recurrent i el còmput global. En canvi, l'estructura de \textit{MediaPipe} (33 punts) ofereix l'equilibri perfecte entre pes i detall anatòmic.
 
-Davant d'aquest escenari, es va descartar l'opció de retallar l'avaluació als 17 \textit{keypoints} o saturar el sistema amb els 133 punts de \textit{WholeBody}. La solució adoptada va consistir a desenvolupar un codi de programari per realitzar una migració i mapeig de topologies (vegeu la Figura \ref{fig:keypoint_mapping_art} a l'Estat de l'Art).
-
-En rebre el JSON amb les coordenades normalitzades de Sapiens, s'executa una funció de mapeig que s'encarrega d'identificar els \textit{keypoints} de COCO i reescriure'ls en les posicions corresponents de la topologia de \textit{MediaPipe}, generant un nou esquelet normalitzat. Aquest pas d'estandardització ha estat la clau per aprofitar la precisió del model \textit{Sapiens-2B} enlloc d'haver de reescriure tota la lògica d'avaluació geomètrica inicialment programada, garantint un esquelet de 33 punts de control (peus inclosos).
+Per resoldre-ho, s'ha implementat un algorisme de mapeig (vegeu la Figura \ref{fig:keypoint_mapping_art} a l'Estat de l'Art). Aquesta funció llegeix el JSON de Sapiens i reescriu les coordenades directament sobre la topologia de \textit{MediaPipe}. Aquesta estandardització ha permès aprofitar l'extrema precisió de \textit{Sapiens-2B} sense necessitat de reescriure la lògica geomètrica original, garantint un esquelet lleuger i biomecànicament complet.
 
 \subsection{Pipeline d'Extracció i Suavitzat Temporal}
-Un cop seleccionat el model \textit{Sapiens-2B} com a motor principal d'extracció, s'ha implementat el mòdul de processament de senyal per reduir el soroll de l'estimació espacial. L'aplicació pràctica del filtre de \textit{Savitzky-Golay} va generar un dubte tècnic important durant les primeres fases del projecte.
+Un cop seleccionat \textit{Sapiens-2B}, s'ha dissenyat un mòdul de processament seqüencial en dues fases per corregir les discontinuïtats i reduir el soroll de l'estimació espacial.
 
-A causa dels primers assajos obtinguts en els girs de perfil (vegeu la Figura \ref{fig:compare_bad}), es va valorar la possibilitat de suprimir-lo de l'arquitectura. En moviments on la gimnasta experimenta una alta freqüència de rotacions o auto-oclusions severes, l'ajust del polinomi tendia a difuminar l'intercanvi ràpid de cames, provocant un efecte de sobre-suavitzat (\textit{oversmoothing}) que deformava la morfologia de l'esquelet real.
+Primer, s'aborda el \textit{frame dropping} (valors \textit{NaN} causats per oclusions severes) mitjançant un \textit{KNNImputer} ($k=2$). Aquest algorisme reconstrueix els \textit{frames} perduts recolzant-se en la coherència de les dades temporals adjacents, garantint un senyal ininterromput.
+
+A continuació, sobre aquest flux de dades continu, s'aplica el filtre de \textit{Savitzky-Golay}. Inicialment, el seu ús va generar dubtes perquè, en girs d'alta freqüència, l'ajust del polinomi provocava un sobre-suavitzat (\textit{oversmoothing}) que deformava l'intercanvi ràpid de cames (vegeu la Figura \ref{fig:compare_bad}).
 
 \begin{figure}[H]
     \centering
@@ -264,7 +256,7 @@ A causa dels primers assajos obtinguts en els girs de perfil (vegeu la Figura \r
     \label{fig:compare_bad}
 \end{figure}
 
-No obstant això, aquesta decisió es va revertir en comprovar la seva gran importància per a l'estabilitat global del \textit{pipeline}. Durant les extraccions massives de vídeos per al \textit{dataset}, s'ha demostrat que el filtre és una eina fonamental per contrarestar el \textit{frame dropping} (instants on la xarxa neuronal no detecta cap esquelet). En seqüències d'acrobàcies d'extensió fluida, l'ajust polinòmic assoleix un alineament biomecànic quasi perfecte (vegeu la Figura \ref{fig:compare_good}), garantint un senyal continu i net.
+No obstant això, aquesta estructura dual va resultar indispensable. La imputació prèvia del \textit{KNNImputer} assegura que el filtre operi sobre un senyal regular, optimitzant l'eliminació del \textit{jitter} (vibracions del senyal). En acrobàcies de trajectòria fluida, aquest \textit{pipeline} assoleix un alineament biomecànic excel·lent i estable (vegeu la Figura \ref{fig:compare_good}).
 
 \begin{figure}[H]
     \centering
@@ -274,7 +266,7 @@ No obstant això, aquesta decisió es va revertir en comprovar la seva gran impo
 \end{figure}
 
 \subsection{Creació del Dataset i Classificació Recurrent}
-Per construir el \textit{dataset} d'entrenament, s'han seleccionat vídeos del canal oficial de \textit{USA Gymnastics} \cite{usa_gymnastics_yt}, seguint la taxonomia de bases de dades com \textit{FineGym} \cite{finegym}. S'ha aïllat la fase aèria a la barra d'equilibris de quatre categories acrobàtiques (vegeu la Figura \ref{fig:exercises}), obtenint una mostra inicial de 72 seqüències.
+Per construir el \textit{dataset}, s'han seleccionat vídeos del canal \textit{USA Gymnastics} \cite{usa_gymnastics_yt} seguint la taxonomia de \textit{FineGym} \cite{finegym}. L'estudi se centra exclusivament en la barra d'equilibris (\textit{balance beam}), ja que la seva perspectiva de càmera lateral optimitza l'estimació 2D i concentra les principals tipologies de salts. D'aquesta manera, s'han aïllat 72 seqüències aèries classificades en quatre categories (vegeu la Figura \ref{fig:exercises}).
 
 \begin{figure}[H]
     \centering
@@ -283,22 +275,20 @@ Per construir el \textit{dataset} d'entrenament, s'han seleccionat vídeos del c
     \label{fig:exercises}
 \end{figure}
 
-Per millorar la generalització del model donat aquest volum limitat, s'ha aplicat una tècnica de \textit{Data Augmentation} basada en l'efecte mirall (\textit{mirroring}). En lloc d'editar el vídeo, l'algorisme inverteix directament l'eix X de les coordenades JSON respecte al centre del tors. Això ensenya a la xarxa la simetria de l'exercici i permet duplicar les dades exactament, assolint un \textit{dataset} final de 144 mostres equilibrades.
+Per millorar la generalització del model, s'ha aplicat \textit{Data Augmentation} per simetria (\textit{mirroring}), invertint l'eix X de les coordenades directament sobre el JSON per ensenyar al model la simetria de l'exercici. Això ha permès duplicar les dades fins a assolir un \textit{dataset} de 144 mostres equilibrades.
 
-Aquestes seqüències s'han estandarditzat a blocs de 30 \textit{frames} per entrenar el classificador \textit{LSTM} mitjançant \textit{PyTorch}. El model rep un vector d'entrada amb les coordenades bidimensionals dels 33 \textit{keypoints} normalitzats i, després de processar la seqüència, transmet el darrer estat ocult a una capa lineal de sortida amb activació \textit{Softmax} per estimar la probabilitat de cada classe acrobàtica.
+Finalment, aquestes seqüències s'han estandarditzat a blocs de 30 \textit{frames} per entrenar un classificador \textit{LSTM} en \textit{PyTorch}. El model processa les coordenades dels 33 \textit{keypoints} i transmet el darrer estat ocult a una capa final amb activació \textit{Softmax} per predir la probabilitat de cada acrobàcia.
 
 \subsection{Motor de Lògica d'Avaluació i Pelvis Virtual}
-Una vegada la xarxa \textit{LSTM} ha classificat l'acrobàcia, el sistema transfereix el control al mòdul \textit{AcrobaticEvaluator}. Aquest component s'encarrega d'aplicar estrictament les normatives del Codi de Puntuació de la \textit{FIG} \cite{fig_rules} en regles geomètriques computables.
+Un cop la xarxa \textit{LSTM} ha classificat l'acrobàcia, el mòdul \textit{AcrobaticEvaluator} tradueix el Codi de Puntuació de la \textit{FIG} \cite{fig_rules} en regles geomètriques computables.
 
-Per garantir una avaluació robusta davant la distorsió de la perspectiva monocular, s'ha dissenyat la Pelvis Virtual (vegeu la Figura \ref{fig:pelvis_virtual}). Si es calculés l'angle directament entre les cames i la pelvis sense processament previ, el sistema només obtindria l'angle relatiu de cada cama per separat, provocant resultats distorsionats segons la posició de la gimnasta respecte a la càmera. La Pelvis Virtual resol aquest problema convertint els vectors d'extrems en un sol angle d'obertura real basat en un punt de control centralitzat.
-
-Aquest punt, que anomenarem punt imaginari ($P_i$), es calcula com el punt mig geomètric entre els \textit{keypoints} dels malucs esquerre ($P_L=(x_L, y_L)$) i dret ($P_R=(x_R, y_R)$):
+Per garantir una avaluació robusta davant la distorsió de la perspectiva monocular, s'ha dissenyat la Pelvis Virtual (vegeu la Figura \ref{fig:pelvis_virtual}). Calcular l'angle de cada cama per separat generaria errors segons l'orientació de la gimnasta. Aquesta solució unifica la mesura creant un punt central imaginari ($P_i$), calculat com el punt mig geomètric entre els malucs esquerre ($P_L=(x_L, y_L)$) i dret ($P_R=(x_R, y_R)$):
 
 \begin{equation}
     P_i = \left( \frac{x_L + x_R}{2}, \frac{y_L + y_R}{2} \right)
 \end{equation}
 
-Aquest $P_i$ permet establir un origen de coordenades propi de la gimnasta, invariant a la rotació de l'atleta o a l'angle de gravació. 
+Aquest $P_i$ estableix un origen de coordenades invariant a la rotació de l'atleta o a l'angle de gravació. 
 
 \begin{figure}[H]
     \centering
@@ -307,19 +297,19 @@ Aquest $P_i$ permet establir un origen de coordenades propi de la gimnasta, inva
     \label{fig:pelvis_virtual}
 \end{figure}
 
-Per calcular l'amplitud d'obertura, el sistema construeix dos vectors, $\vec{u}$ i $\vec{v}$, que connecten aquest punt virtual amb les articulacions dels genolls ($K_L$ i $K_R$):
+Per calcular l'obertura real, el sistema construeix dos vectors ($\vec{u}$ i $\vec{v}$) que connecten aquest punt virtual amb els genolls ($K_L$ i $K_R$):
 
 \begin{equation}
     \vec{u} = K_L - P_i, \quad \vec{v} = K_R - P_i
 \end{equation}
 
-L'angle real d'obertura $\theta$ s'obté mitjançant el producte escalar entre ambdós vectors:
+L'angle $\theta$ s'obté mitjançant el producte escalar d'ambdós vectors:
 
 \begin{equation}
     \theta = \arccos\left(\frac{\vec{u} \cdot \vec{v}}{|\vec{u}| |\vec{v}|}\right) \cdot \frac{180}{\pi}
 \end{equation}
 
-Per adaptar la perfecció teòrica (com els 180º d'un \textit{split}) a la variabilitat biomecànica real, s'han definit uns llindars de penalització específics (vegeu la Taula \ref{tab:thresholds}). Com a norma transversal, s'hi suma l'avaluació de l'extensió dels turmells (\textit{ankles}), amb un límit fix de 130º per aplicar exclusivament deduccions \textit{Minor} (-0.1).
+Per adaptar la perfecció teòrica a la variabilitat biomecànica real, s'han definit els llindars de penalització específics de la Taula \ref{tab:thresholds}. De forma transversal, s'hi suma l'avaluació de l'extensió dels turmells, amb un límit fix de 130º (exclusivament per aplicar deduccions \textit{Minor} de -0.1).
 
 \begin{table}[H]
 \centering
@@ -340,42 +330,47 @@ Per adaptar la perfecció teòrica (com els 180º d'un \textit{split}) a la vari
 \end{tabular}
 \end{table}
 
-El sistema calcula les desviacions al \textit{peak frame}, les resta de la nota base de 10.0 punts, i les visualitza a la interfície amb un codi de colors intuïtiu: verd (\textit{Minor}), taronja (\textit{Medium}) i vermell (\textit{Severe}), facilitant-ne la validació al jutge humà.
+El sistema calcula aquestes desviacions al \textit{peak frame}, les resta de la nota base de 10.0 punts i les visualitza a la interfície amb un codi de colors intuïtiu (verd, taronja i vermell), facilitant-ne la validació al jutge humà.
 
-\subsection{Avaluació Contínua i Mapeig Espacial}
-Per anar més enllà de l'anàlisi de clips aïllats i permetre el processament de rutines completes, s'ha implementat un algorisme de finestra lliscant (\textit{sliding window}). Aquest sistema fragmenta el flux continu de vídeo in blocs temporals de $N=30$ \textit{frames} amb un desplaçament constant. Cada bloc s'envia a la xarxa \textit{LSTM}, que retorna una probabilitat de pertinença a les classes acrobàtiques.
+\subsection{Processament Temporal i Mapeig Espacial}
 
-Un repte detectat en aquesta fase d'avaluació contínua és la detecció de falsos positius en segments de transició, especialment durant els aterratges (\textit{landings}). Atès que el \textit{dataset} d'entrenament inclou la fase final del salt per captar la biomecànica completa, el model pot classificar erròniament el contacte amb la barra com a part de l'acrobàcia. Aquesta limitació es podria solucionar en treballs futurs amb la creació d'una nova classe a classificar per la xarxa neuronal, com ara \textit{"Transition"}, dissenyada específicament per captar els instants on la gimnasta inicia o finalitza el contacte amb l'aparell. És important destacar que el sistema s'ha concebut com una eina d'assistència al judici: el jutge humà manté el criteri final i pot descartar aquelles avaluacions automàtiques que corresponguin a \textit{frames} no rellevants biomecànicament.
+Per tal d'adaptar les dades cinemàtiques a les restriccions d'entrada de la xarxa neuronal i permetre una avaluació visual intuïtiva, s'han implementat tres mecanismes fonamentals de processament seqüencial i espacial.
 
-D'altra banda, per visualitzar les penalitzacions de forma clara, s'ha resolt el repte del mapeig espacial de coordenades. Les dades emmagatzemades al JSON són valors normalitzats relatius al centre del tors (en un rang aproximat de $[-1, 1]$), un format optimitzat per a l'aprenentatge del model de classificació profunda però no apte per a la representació gràfica directa. Per resoldre-ho, s'ha definit un llenç de representació normalitzat i s'ha implementat una funció de desnormalització lineal:
+\subsubsection{Estandardització Temporal d'Acrobàcies Aïllades}
+Per garantir que totes les mostres d'entrada a la xarxa \textit{LSTM} tinguin una dimensió matricial uniforme, s'ha dissenyat un algorisme d'interpolació. Com que l'execució d'una acrobàcia varia en durada depenent de l'atleta, les seqüències aïllades s'interpolen matemàticament (mitjançant funcions d'interpolació lineal unidimensional) fins a assolir una longitud temporal fixa exacta de $N=30$ \textit{frames}. Aquest procés redimensiona la seqüència mantenint intacta la coherència cinemàtica de les posicions, velocitats i acceleracions de l'esquelet.
+
+\subsubsection{Avaluació Contínua mitjançant Finestra Lliscant}
+Per avaluar rutines completes (conjunt d'exercicis) en lloc d'exercicis aïllats, s'ha implementat un algorisme de finestra lliscant (\textit{sliding window}). En detectar activitat, el sistema fixa el \textit{peak frame} com a centre i rastreja l'alçada del turmell (\textit{ankle}) per acotar l'inici i final del salt. Cada bloc dinàmic resultant s'envia a la xarxa \textit{LSTM}, permetent aïllar i classificar automàticament totes les acrobàcies consecutives d'un mateix vídeo. Aquest procediment es detalla a la secció \ref{sec:seg_cine}.
+
+\subsubsection{Mapeig Espacial i Visualització}
+Finalment, per renderitzar les penalitzacions de forma clara a la interfície, s'ha resolt el repte del mapeig espacial de coordenades. Les dades emmagatzemades originalment al JSON són valors normalitzats relatius al centre del tors (en un rang aproximat de $[-1, 1]$), un format optimitzat per a l'aprenentatge profund, però no apte per a la representació gràfica directa. Per resoldre-ho, s'ha definit un llenç de representació normalitzat i s'ha implementat una funció de desnormalització lineal:
 
 \begin{equation}
     X_{pixel} = (x_{norm} \cdot S) + O_x, \quad Y_{pixel} = (y_{norm} \cdot S) + O_y
 \end{equation}
 
-On $S$ és un factor d'escala constant per amplificar la magnitud de l'esquelet i $(O_x, O_y)$ representen l'\textit{offset} necessari per centrar la figura en el pla bidimensional. Aquesta transformació permet reconstruir l'esquelet virtual amb una proporció biomecànica perfecta, facilitant la il·luminació dinàmica dels \textit{joints} infractors (verd, taronja i vermell) segons la gravetat de la deducció calculada pel motor.
+On $S$ és un factor d'escala constant per amplificar la magnitud de l'esquelet i $(O_x, O_y)$ representen l'\textit{offset} necessari per centrar la figura en el pla bidimensional. Aquesta transformació permet reconstruir l'esquelet virtual amb una proporció biomecànica perfecta, facilitant la il·luminació dinàmica de les articulacions infractores (verd, taronja i vermell) segons la gravetat de la deducció calculada pel motor de regles.
 
-\subsection{Prototipatge de la Interfície Gràfica (GUI)}
-Com a avançament estratègic de la Fase 4 del cronograma, dedicada a la integració a l'aplicació d'escriptori per als jutges, s'ha iniciat el disseny de la interfície mitjançant el \textit{framework} \textit{PyQt6}. Aquest mòdul es troba actualment en una fase de prototipatge visual no funcional, servint com a guia conceptual per validar la distribució d'elements abans de la seva implementació lògica final.
+\subsection{Segmentació Temporal Dinàmica basada en la Cinemàtica dels Turmells}
+\label{sec:seg_cine}
+Un dels reptes identificats durant l'avaluació contínua amb l'algorisme de \textit{sliding window} va ser la generació de falsos positius durant els segments de transició, especialment en els aterratges (\textit{landings}). En aquests instants, la compressió del cos en contactar amb la barra provocava que la xarxa \textit{LSTM} classifiqués el moviment com una acrobàcia activa, aplicant penalitzacions severes de forma errònia.
 
-L'arquitectura prevista per a la interfície es fonamenta en un sistema de doble visualització (\textit{Dual Viewport}):
+Per resoldre aquesta limitació sense necessitat de reentrenar el model amb noves classes, s'ha dissenyat un algorisme de segmentació cinemàtica basat en el desplaçament dels \textit{keypoints} dels turmells (punts 27 i 28 de la topologia \textit{BlazePose}). Aquest mètode s'inspira en les tècniques d'actualització de velocitat zero \textit{(ZUPT)} utilitzades en la biomecànica clàssica.
 
-\begin{itemize}
-    \item \textbf{Panell de Referència i Control:} Està destinat a la visualització del flux de vídeo principal. Es preveu que l'usuari pugui alternar dinàmicament entre dues modalitats crítiques: l'output directe del model \textit{Sapiens} (esquelet en cru renderitzat sobre el fitxer .avi) o la representació avançada que integra el codi de colors segons la gravetat de cada angle biomecànic obtingut de les metadades JSON.
+El funcionament de la millora s'estructura de la següent manera:
+\begin{enumerate}
+    \item \textbf{Detecció del \textit{Peak Frame}:} La xarxa \textit{LSTM} identifica el \textit{frame} de màxima probabilitat d'una acrobàcia (per exemple, el punt més alt d'un salt \textit{Split}).
+    \item \textbf{Càlcul de Desplaçament Espacial:} A partir d'aquest punt central, el sistema calcula la distància euclidiana $\Delta d$ dels turmells entre \textit{frames} consecutius.
+    \item \textbf{Propagació Bidireccional (\textit{Forward/Backward}):} L'algorisme propaga l'etiqueta de l'acrobàcia cap enrere i cap endavant en el temps. Si el desplaçament $\Delta d$ dels turmells és elevat, significa que la gimnasta es troba en la fase aèria i l'acrobàcia segueix activa. Si la distància cau per sota d'un llindar establert (indicant que els turmells s'han estabilitzat o la seva velocitat és propera a zero), el sistema interpreta que l'atleta ha contactat amb l'aparell.
+    \item \textbf{Delimitació Aïllada:} En l'instant del contacte, es talla la propagació de l'etiqueta de la \textit{sliding window}.
+\end{enumerate}
 
-    \item \textbf{Panell d'Anàlisi Biomecànic:} En aquest espai es renderitzarà l'esquelet virtual sobre el llenç linealitzat. Aquesta vista aïllada permet identificar les infraccions posturals de forma neta, utilitzant la il·luminació dinàmica de les articulacions per ressaltar les deduccions detectades pel motor de regles.
-\end{itemize}
+Aquesta millora permet acotar de forma dinàmica la durada exacta de cada acrobàcia segons l'evolució física real de l'atleta, eliminant completament el soroll auditiu en les recepcions i evitant les penalitzacions artificials per impacte.
 
-Així mateix, s'ha dissenyat un prototip d'aplicació d'escriptori (vegeu la Figura \ref{fig:gui_mockup}) que, en versions futures, comunicarà els resultats del motor de lògica en temps real. L'aplicació prioritza de forma paral·lela la visualització del \textit{frame} actual del vídeo i la llegibilitat en forma de \textit{log} de registre asíncron per a les deduccions aplicades en aquell instant concret del salt. La versió preliminar programada al \textit{framework PyQt6} es pot visualitzar a l'Apèndix \ref{apx:desktop_app}, on es reflexa l'estat actual de l'aplicació.
+\subsection{Desenvolupament de l'Aplicació d'Escriptori i Experiència d'Usuari (UX)}
+A partir del prototip conceptual plantejat en fases anteriors, s'ha desenvolupat i consolidat una aplicació d'escriptori totalment funcional mitjançant el \textit{framework PyQt6}. Atès que l'objectiu principal del sistema és assistir els jutges en un entorn on la càrrega cognitiva i la pressió temporal són elevades, el disseny de la interfície s'ha guiat estrictament per principis de \textit{User Experience (UX)} i usabilitat eficient.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{img/mockup.png}
-    \caption{Disseny conceptual (\textit{mockup}) de la interfície gràfica dissenyada a Canva.}
-    \label{fig:gui_mockup}
-\end{figure}
-
-Això reafirma el disseny del projecte com una eina d'assistència: la interfície es concep perquè la intel·ligència artificial actuï com un observador extern que proposa correccions, deixant sempre la potestat final de confirmar o descartar les penalitzacions al criteri expert del jutge humà.
+S'ha descartat la dependència exclusiva del ratolí en favor d'un flux de treball basat en dreceres de teclat (\textit{shortcuts}), permetent a l'usuari mantenir la vista fixada en el monitor i auditar les rutines de forma ininterrompuda. L'aplicació actua com un copilot: la intel·ligència artificial localitza els \textit{peak frames} i proposa les deduccions, però el jutge manté el control absolut mitjançant un sistema d'interacció ràpida.
 
 \section{Resultats i Discussió}
 Aquesta secció presenta la validació experimental del sistema, iniciant amb la comparativa de viabilitat dels models d'extracció i seguint amb l'avaluació quantitativa i qualitativa del classificador recurrent i el motor de puntuació biomecànica sobre rutines reals.
@@ -391,7 +386,7 @@ En la primera fase, s'ha avaluat el rendiment teòric dels models sobre una most
 \caption{Avaluació preliminar sobre el dataset de \textit{running}}
 \label{tab:avaluacio-running}
 \renewcommand{\arraystretch}{1.2}
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{2pt}
 \begin{tabular}{lccc}
 \hline
 \textbf{Model} & \textbf{mAP@0.5} & \textbf{mAP@0.75} & \textbf{PCK@0.2} \\ \hline
@@ -408,7 +403,7 @@ No obstant això, el rendiment en entorns controlats no es tradueix directament 
 \caption{Avaluació sobre fragment acrobàtic en barra d'equilibris}
 \label{tab:avaluacio-gym}
 \renewcommand{\arraystretch}{1.2}
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{2pt}
 \begin{tabular}{lccc}
 \hline
 \textbf{Model} & \textbf{mAP@0.5} & \textbf{mAP@0.75} & \textbf{PCK@0.2} \\ \hline
@@ -452,57 +447,96 @@ Com a millora futura, la incorporació d'una característica addicional d'orient
     \label{fig:confusion_matrix}
 \end{figure}
 
-\subsection{Validació de l'E-Score i Anàlisi de Casos Gràfics}
-Una vegada validada la classificació, es va testejar la precisió del motor de lògica determinista sobre seqüències reals d'alta velocitat per avaluar l'aïllament de l'esquelet i el comportament del sistema de deduccions basat en el Codi de Puntuació de la \textit{FIG}. L'experimentació ha permès identificar dues tipologies de resultats:
+\subsection{Interfície d'Assistència a l'Arbitratge i Validació Gràfica}
+Una vegada validada la classificació i el motor de lògica determinista, s'ha integrat tot el sistema en una aplicació d'escriptori final, dissenyada sota el paradigma \textit{Human-in-the-Loop}. 
 
-\subsubsection{Funcionament Òptim i Captura de \textit{Peak Frame}}
-La Figura \ref{fig:result_good} exemplifica el comportament ideal del \textit{pipeline}. El model \textit{LSTM} classifica correctament l'acrobàcia i el mòdul d'avaluació localitza amb precisió el \textit{frame} de màxima amplitud. El panell d'anàlisi biomecànic dibuixa l'esquelet net on s'imprimeixen el tipus de salt i la seva confiança. A més, gràcies a l'algorisme de dibuix per capes, s'il·luminen correctament en color vermell aquelles línies de control que superen els llindars crítics (penalització \textit{Severe}), garantint una visualització immediata per al jutge.
+Per garantir una avaluació fluida i reduir el temps de reacció ergonòmic del jutge, la interfície s'ha dotat d'un sistema de dreceres de teclat (\textit{shortcuts}) orientades a la navegació ràpida entre els punts crítics detectats pel model. Aquestes accions es detallen a la Taula \ref{tab:shortcuts_app}.
+
+\begin{table}[H]
+\centering
+\caption{Dreceres de teclat per a la interfície d'assistència a l'arbitratge}
+\label{tab:shortcuts_app}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{ll}
+\hline
+\textbf{Drecera de teclat} & \textbf{Acció assignada} \\ \hline
+\texttt{$\leftarrow$} (Fletxa esq.) & Retrocedir al \textit{frame} anterior \\
+\texttt{$\rightarrow$} (Fletxa dreta) & Avançar al \textit{frame} següent \\
+\texttt{Espai} & Reproduir o pausar la seqüència \\ \hline
+\texttt{Z} & Saltar a la deducció anterior \\
+\texttt{X} & Saltar a la deducció següent \\ \hline
+\texttt{Ctrl + Z} & Desfer l'última acció del jutge \\
+\texttt{Ctrl + Y} & Refer l'última acció desfeta \\
+\texttt{Ctrl + O} & Obrir un nou arxiu d'avaluació \\
+\texttt{Ctrl + S} & Exportar l'informe en format \texttt{.txt} \\ \hline
+\end{tabular}
+\end{table}
+
+L'experimentació visual sobre la interfície amb seqüències reals d'alta velocitat ha permès identificar dues tipologies clares de resultats.
+
+\subsubsection{Casos d'Èxit (Funcionament Òptim i Captura del \textit{Peak Frame})}
+Les Figures \ref{fig:app_good1} i \ref{fig:app_good2} mostren el comportament ideal de l'aplicació en acrobàcies aïllades. El sistema localitza el \textit{peak frame}, renderitza l'esquelet net i il·lumina en vermell les línies de control que superen els llindars de penalització, facilitant la validació immediata del jutge.
+
+Analitzant les tipologies (Figura \ref{fig:app_good1}), el sistema detecta de forma impecable les classes \textit{Pike} i \textit{Tuck}. No obstant això, la pèrdua de profunditat de la càmera 2D genera confusió en les obertures aèries (Figura \ref{fig:app_good2}), arribant a classificar un \textit{Straddle} com a \textit{Split} amb baixa confiança (52\%). Malgrat aquest error taxonòmic, la fiabilitat de l'auditoria es manté intacta: ambdues acrobàcies comparteixen la mateixa exigència geomètrica a l'E-Score (obertura de 180º), pel que el càlcul de deduccions no s'altera.
+
+Finalment, per evitar falsos positius en avaluar rutines contínues, es va enriquir el \textit{dataset} de la xarxa \textit{LSTM} afegint-hi seqüències de transició. Això va dotar el classificador del context temporal necessari per discriminar directament els moviments preparatoris d'impuls respecte a l'acrobàcia principal.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth]{img/result_good.png}
-    \caption{Visualització d'un cas d'èxit. L'esquelet es renderitza sobre el llenç reflectint de forma correcta les obertures angulars i superposant amb èxit el color de la penalització més greu.}
-    \label{fig:result_good}
+    \includegraphics[width=\linewidth]{img/app_good1.png}
+    \caption{Visualització a la interfície de salts amb gran diferenciació morfològica. El sistema assoleix un èxit rotund en la classificació i validació geomètrica de les classes \textit{Pike} i \textit{Tuck}.}
+    \label{fig:app_good1}
 \end{figure}
 
-\subsubsection{Propagació de l'Error per Fals Positiu de Transició}
-Per contra, la Figura \ref{fig:result_bad} mostra un error de detecció causat per les limitacions temporals discutides. En aquest escenari, la xarxa \textit{LSTM} genera un fals positiu en classificar un fragment de transició (l'aterratge de la gimnasta) com una classe acrobàtica activa. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{img/app_good2.png}
+    \caption{Avaluació d'obertures aèries. S'observa l'èxit en la classe \textit{Split} i la confusió en intentar avaluar un \textit{Straddle} amb una baixa confiança (52\%).}
+    \label{fig:app_good2}
+\end{figure}
 
-És important matisar que el motor geomètric de l'\textit{AcrobaticEvaluator} actua de forma analíticament correcta: calcula els vectors sobre l'esquelet rebut i, en detectar angles completament tancats o deformats per l'impacte amb l'aparell, aplica de manera coherent una deducció de caràcter \textit{Severe} (-0.5). Per tant, la fallada no recau en la lògica matemática de les regles (que executa correctament el codi de colors vermell), sinó en una classificació errònia d'origen temporal.
+\subsubsection{Limitacions Temporals per Fals Positiu de Transició}
+Per contra, la Figura \ref{fig:result_bad} mostra un error de detecció causat inicialment per limitacions de segmentació temporal. En aquest escenari, la xarxa \textit{LSTM} genera un fals positiu en classificar un fragment de transició (com l'aterratge de la gimnasta) com si fos una classe acrobàtica activa. 
+
+És important matisar que el motor geomètric actua de forma analíticament correcta: calcula els vectors sobre l'esquelet rebut i, en detectar angles completament tancats per l'impacte amb l'aparell, aplica coherentment una deducció de caràcter \textit{Severe} (-0.5). Per tant, la fallada no recau en la lògica matemàtica de les regles, sinó en una classificació errònia d'origen temporal.
+
+Per abordar aquesta problemàtica sense recórrer a la creació d'una nova classe de "Transició", una decisió que hauria requerit la complexitat de reentrenar completament la xarxa \textit{LSTM}, es va treure profit del disseny \textit{Human-in-the-Loop} de l'aplicació. Com que la interfície està concebuda com una ajuda sota el control absolut del jutge, es va implementar l'opció d'invalidar l'avaluació amb un botó de "Fals Positiu", el qual reescriu la classe directament amb "Transició", i descarta totes les possibles penalitzacions.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{img/result_bad.png}
-    \caption{Visualització d'un cas crític de fals positiu. S'observa l'aplicació d'una penalització severa provocada per una activació errònia de la LSTM durant la fase de recepció o contacte amb la barra.}
+    \caption{Visualització a la interfície d'un fals positiu. S'observa l'aplicació d'una penalització severa provocada per una activació errònia durant la fase de recepció.}
     \label{fig:result_bad}
 \end{figure}
 
-\subsection{Anàlisi de l'Avaluació Contínua i Eficiència Temporal}
-L'algorisme de finestra lliscant (\textit{sliding window}) permet processar rutines completes de forma contínua i sense segmentació manual. Davant d'anomalies puntuals com els falsos positius en els aterratges (Figura \ref{fig:result_bad}), es reafirma la necessitat d'una eina d'assistència on el jutge humà pugui identificar i invalidar aquestes deduccions a l'instant des de la interfície.
+\subsection{Eficiència Computacional}
+A nivell de rendiment, processar una rutina completa de longitud estàndard (aproximadament 1 minut i 20 segons, equivalent a 2.400 \textit{frames}) amb una GPU \textit{NVIDIA GeForce RTX 2080 Ti} requereix un temps de còmput d'entre 3 i 4 hores. Aquest cost evidencia el compromís inherent entre precisió i velocitat: la complexitat d'utilitzar un model fundacional pesat com \textit{Sapiens-2B} genera un \textit{bottleneck} temporal, però a canvi garanteix la robustesa extrema davant d'oclusions descrita a la Taula \ref{tab:avaluacio-gym}.
 
-A nivell de rendiment computacional, processar un vídeo d'1 minut i 20 segons (2.400 \textit{frames}) amb una GPU \textit{NVIDIA GeForce RTX 2080 Ti} requereix entre 3 i 4 hores (5-6 segons per \textit{frame}). Aquest cost evidencia el compromís directe entre precisió i velocitat: la complexitat d'utilitzar un model fundacional com \textit{Sapiens-2B} (2 mil milions de paràmetres) genera aquest \textit{bottleneck} temporal, però garanteix la robustesa extrema davant d'oclusions descrita a la Taula \ref{tab:avaluacio-gym}.
-
-D'aquesta manera, l'execució \textit{offline} esdevé una solució econòmica i assequible per a l'esport base, evitant infraestructures inassolibles com la de \textit{Fujitsu}. Com a línies de treball futur per reduir aquesta latència, es planteja la migració del sistema cap a GPUs modernes de gamma alta (com la \textit{NVIDIA RTX 4090}) o l'exploració de models d'extracció més lleugers que assoleixin mantenir la precisió anatòmica de la gimnasta.
-
-\section{Conclusions Provisionals}
+Malgrat aquesta latència, l'execució \textit{offline} compleix amb l'objectiu fonamental del projecte: oferir una solució econòmica i assequible per a l'esport base, evitant infraestructures de maquinari inassolibles com les utilitzades a l'elit esportiva. Com a línies de treball futur per reduir aquest temps de processament, es planteja la migració del sistema cap a GPUs d'última generació (com la sèrie \textit{NVIDIA RTX 50}).
+\section{Conclusions}
 A partir del desenvolupament i les proves de validació realitzades fins a la data, s'ha demostrat la viabilitat tècnica del sistema. Les principals conclusions es resumeixen en els següents punts:
 
 \begin{itemize}
     \setlength{\itemsep}{0.5em} 
     
-    \item La combinació del model \textit{Sapiens-2B} com a xarxa recurrent \textit{LSTM} ha demostrat ser una arquitectura robusta per a l'anàlisi cinemàtica. Tot i l'ambigüitat provocada per la pèrdua de profunditat en els salts d'obertura (amb un \textit{F1-Score} del 46.0\% en \textit{Split} i \textit{Straddle}), l'èxit absolut del 100\% en les classes \textit{Tuck} i \textit{Pike} en valida el rendiment global.
+    \item La integració de \textit{Sapiens-2B} i la xarxa recurrent \textit{LSTM} conforma una arquitectura robusta per a l'anàlisi cinemàtica. Tot i la limitació del model en discriminar algunes obertures aèries (46.0\% d'\textit{F1-Score} en \textit{Split} i \textit{Straddle}), aquesta confusió no afecta el funcionament global de l'aplicació. Aquest comportament recau principalment en no haver inclòs l'orientació espacial (\textit{orientation}) de la gimnasta com a paràmetre d'entrada.
 
-    \item El disseny de la Pelvis Virtual com a punt de control sintètic ha demostrat ser una solució geomètrica eficaç. L'ús de vectors i productes escalars permet traduir les normatives de la \textit{FIG} de manera totalment objectiva i invariant respecte a la perspectiva lineal o rotació de la gimnasta.
+    \item L'èxit operatiu recau en quatre pilars clau: la normalització al tors i el \textit{KNNImputer} per garantir un senyal espacial temporalment robust; la \textit{Pelvis Virtual} per avaluar angles invariants a la perspectiva; i la \textit{Sliding Window} per aïllar dinàmicament els exercicis en rutines contínues.
 
-    \item L'estudi de latència del \textit{pipeline} (entre 3 i 4 hores per a un vídeo de 2.400 \textit{frames} en una GPU \textit{NVIDIA RTX 2080 Ti}) confirma el compromís clàssic entre precisió biomecànica i temps de còmput. No obstant això, l'execució en\textit{offline} compleix l'objectiu fonamental de democratitzar aquest tipus d'anàlisi, oferint una alternativa assequible per a l'esport base devant els sistemes multimilionaris de l'elit mundial.
+    \item Tot i el cost computacional inherent a l'ús de models fundacionals pesats (requerint processament \textit{offline}), el sistema assoleix l'objectiu de democratitzar l'assistència arbitral, oferint una eina viable i de baix cost per a l'esport base davant les inassolibles infraestructures de l'elit.
 
-    \item Es confirma el disseny del programari com una eina d'assistència i suport al judici, on la intel·ligència artificial actua com un observador algorísmic d'alta precisió per proporre deduccions de l'\textit{E-Score}, delegant sempre la decisió final al criteri expert del jutge humà.
+    \item S'ha desenvolupat amb èxit una aplicació interactiva sota el paradigma \textit{Human-in-the-Loop}. La intel·ligència artificial actua únicament com a assistent biomecànic per proposar deduccions de l'\textit{E-Score}, delegant sempre la validació i el veredicte final al criteri expert del jutge humà.
 \end{itemize}
 
-Com a línia de treball immediata per a la finalització del projecte, un cop tancada amb èxit la validació dels models lògics i d'intel·ligència artificial, es procedirà al desenvolupament i programació de la interfície gràfica interactiva definitiva mitjançant el \textit{framework} \textit{PyQt6}.
+\section*{Agraïments}
+Vull expressar el meu agraïment més sincer al meu tutor, Coen Antens, per creure en aquest projecte des del primer dia i pel seu guiatge acadèmic i tècnic.
+
+També dono les gràcies al CVC i al personal de la Unitat d'Innovació per proporcionar un bon ambient i facilitar-me els recursos computacionals necessaris per dur a terme la inferència del model \textit{Sapiens-2B}.
+
+Finalment, agraeixo a la meva família i amics propers per la seva paciència i el seu suport incondicional durant les incomptables hores de recerca i programació.
 
 \section*{Ús de la IA Generativa}
-En compliment de la normativa d'avaluació del Treball Final de Grau de la UAB, es declara que en l'elaboració d'aquest Informe de Progrés II s'han utilitzat eines d'Intel·ligència Artificial generativa (model \textit{Gemini 3.1 Pro}). 
+En compliment de la normativa d'avaluació del Treball Final de Grau de la UAB, es declara que en l'elaboració d'aquest Informe Final s'han utilitzat eines d'Intel·ligència Artificial generativa (model \textit{Gemini 3.1 Pro}). 
 
 D'acord amb les directrius establertes, el seu ús s'ha limitat exclusivament a l'assistència en aspectes formals i tècnics. Concretament, l'eina s'ha emprat per a la revisió ortotipogràfica, la millora de la fluïdesa del text en català, i com a suport tècnic per a la resolució de problemes de formatació i estructuració del codi en llenguatge \LaTeX.
 
@@ -618,22 +652,22 @@ T1.1 & Revisió de l'Estat de l'Art & 16/02 - 01/03 \\
 T1.2 & Estudi de l'abast i domini & 20/02 - 04/03 \\ 
 T1.3 & Informe Inicial \textbf{(Fita: 08/03)} & 01/03 - 08/03 \\[1.5ex]
 
-\multicolumn{3}{l}{\textbf{Fase 2: Implementació Base i Avaluació de Models}} \\ 
+\multicolumn{3}{l}{\textbf{Fase 2: Extracció i Processament}} \\ 
 T2.1 & Avaluació YOLO, MediaPipe, Sapiens & 09/03 - 22/03 \\ 
 T2.2 & Integració Sapiens i Proc. Senyal & 16/03 - 05/04 \\ 
 T2.3 & Informe Progrés I \textbf{(Fita: 12/04)} & 06/04 - 12/04 \\[1.5ex]
 
-\multicolumn{3}{l}{\textbf{Fase 3: Entrenament de Dades i Lògica}} \\ 
+\multicolumn{3}{l}{\textbf{Fase 3: Classificació i Lògica}} \\ 
 T3.1 & Processament de dades i entrenament RNN & 13/04 - 03/05 \\ 
 T3.2 & Aplicació de la lògica de puntuació (FIG) & 04/05 - 17/05 \\ 
 T3.3 & Informe Progrés II \textbf{(Fita: 24/05)} & 18/05 - 24/05 \\[1.5ex]
 
-\multicolumn{3}{l}{\textbf{Fase 4: Interfície i Validació}} \\ 
+\multicolumn{3}{l}{\textbf{Fase 4: Interfície i Integració}} \\ 
 T4.1 & Generació de l'output visual final (GUI) & 25/05 - 05/06 \\ 
-T4.2 & Validació i ajustament de la RNN & 01/06 - 14/06 \\ 
+T4.2 & Integració de a l'aplicació & 01/06 - 14/06 \\ 
 T4.3 & Proposta Informe Final \textbf{(Fita: 14/06)} & 01/06 - 14/06 \\[1.5ex]
 
-\multicolumn{3}{l}{\textbf{Fase 5: Tancament i Defensa}} \\ 
+\multicolumn{3}{l}{\textbf{Fase 5: Tancament}} \\ 
 T5.1 & Dossier TFG \textbf{(Fita: 29/06)} & 15/06 - 29/06 \\ 
 T5.2 & Pòster \textbf{(Fita: 02/07)} & 22/06 - 02/07 \\ 
 T5.3 & Defensa \textbf{(Fita: 02/07 - 08/07)} & 29/06 - 08/07 \\ \hline
@@ -646,8 +680,8 @@ T5.3 & Defensa \textbf{(Fita: 02/07 - 08/07)} & 29/06 - 08/07 \\ \hline
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{img/app.png}
-    \caption{Primer resultat de l'interfície gràfica no funcional creada amb el \textit{framework PyQt6}.}
+    \includegraphics[width=0.9\linewidth]{img/app_shortcuts.png}
+    \caption{Interfície gràfica funcional amb el llistat de dreceres de teclat (\textit{shortcuts}).}
     \label{fig:desktop_app}
 \end{figure}
 

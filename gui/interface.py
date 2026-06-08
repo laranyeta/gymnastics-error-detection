@@ -16,7 +16,7 @@ from gui.logic import AppLogic
 class MainApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("AcroLens")
+        self.setWindowTitle("Gymnastics Error Detector")
         self.resize(1200, 750)
         self.logic = AppLogic()
         self.video_cap = None

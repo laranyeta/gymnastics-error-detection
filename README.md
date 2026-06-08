@@ -24,14 +24,12 @@
     <a href="#System-Architecture"><samp>SYSTEM ARCHITECTURE</samp></a> •
     <a href="#Repository-Structure"><samp>REPOSITORY STRUCTURE</samp></a> •
     <a href="#Tech-Stack"><samp>TECH STACK</samp></a> •
-    <a href="#Results-&-Performance"><samp>RESULTS & PERFORMANCE</samp></a> •
+    <a href="#Results-Performance"><samp>RESULTS & PERFORMANCE</samp></a> •
     <a href="#How-To-Use"><samp>HOW TO USE</samp></a> •
     <a href="#License"><samp>LICENSE</samp></a> •
-    <a href="#Credits-&-Acknowledgements"><samp>CREDITS & ACKNOWLEDGEMENTS</samp></a>
+    <a href="#Credits-Acknowledgements"><samp>CREDITS & ACKNOWLEDGEMENTS</samp></a>
   </sub>
 </p>
-
-
 
 ## <samp>ABOUT THE PROJECT</samp>
 

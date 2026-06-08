@@ -11,10 +11,10 @@
 
   <img src="https://img.shields.io/badge/status-done-green?style=for-the-badge" alt="status done">
 
-  <a href="docs/TFG_InformeFinal.pdf">
+  <a href="docs/TFG_InformeFinal.pdf?raw=true">
     <img src="https://img.shields.io/badge/Paper-PDF-red?style=for-the-badge&logo=adobeacrobatreader&logoColor=white" alt="Read Thesis">
   </a>
-    <a href="docs/TFG_Poster.pdf">
+    <a href="docs/TFG_Poster.pdf?raw=true">
     <img src="https://img.shields.io/badge/Poster-PDF-red?style=for-the-badge&logo=adobeacrobatreader&logoColor=white" alt="Read Poster">
   </a>
 </p>

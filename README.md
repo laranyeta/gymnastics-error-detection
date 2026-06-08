@@ -7,8 +7,6 @@
 
 <h4 align="center"> <samp><i>Bachelor's Thesis (TFG) - Universitat Autònoma de Barcelona (UAB)</i></h6>
 <p align="center"></samp>
-  <img src="https://img.shields.io/badge/uab-tfg-blue?style=for-the-badge" alt="uab tfg">
-
   <img src="https://img.shields.io/badge/status-done-green?style=for-the-badge" alt="status done">
 
   <a href="https://raw.githubusercontent.com/laranyeta/gymnastics-error-detection/main/docs/TFG_InformeFinal.pdf">
@@ -70,7 +68,7 @@ The goal of this project is not to replace human judges, but to act as a **preci
   <img width="800" height="556" alt="Image" src="https://github.com/user-attachments/assets/a2058db4-9d84-498c-b951-873cd2d2df5c" />
 </h2>
 
-> _<samp>**READ THE FULL RESEARCH PAPER:**</samp> The complete mathematical methodology, model training logs, and full FIG Code of Points geometric mapping can be found in the **[Official Thesis Document (PDF)](https://raw.githubusercontent.com/laranyeta/gymnastics-error-detection/main/docs/TFG_InformeFinal.pdf")**_.
+> _<samp>**READ THE FULL RESEARCH PAPER:**</samp> The complete mathematical methodology, model training logs, and full FIG Code of Points geometric mapping can be found in the **[Official Thesis Document (PDF)](https://raw.githubusercontent.com/laranyeta/gymnastics-error-detection/main/docs/TFG_InformeFinal.pdf)**._
 
 ---
   

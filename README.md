@@ -1,6 +1,6 @@
 <h2 align="center">
   <br>
-    <img width="1280" height="320" alt="banner" src="https://github.com/user-attachments/assets/2997131d-db53-418c-a8d2-741263ee8f52">
+    <img width="1280" height="320" alt="Image" src="https://github.com/user-attachments/assets/ae2f7424-bb72-4c26-85f8-02ebff4c15d2" />
 </h2>
 
 <h3 align="center"><samp><i>Turning pixels into precision:</i> Democratizing elite gymnastics judging with Computer Vision</samp></h3>

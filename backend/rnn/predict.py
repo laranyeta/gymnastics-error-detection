@@ -13,8 +13,10 @@ def resource_path(relative_path): #to create pyinstaller executable file
 def load_prediction_model():
     if torch.backends.mps.is_available():
         device = "mps"
-    else:
+    elif torch.cuda.is_available():
         device = "cuda"
+    else:
+        device = "cpu"
 
     best_path = resource_path("backend/rnn/checkpoints/best.pth")
     model = RNNAcrobaticClassificator(input_size=206, hidden_size=128, n_classes=4, n_layers=2)

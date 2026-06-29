@@ -229,8 +229,13 @@ git clone [https://github.com/laranyeta/gymnastics-error-detection.git](https://
 cd gymnastics-error-detection
 
 #create and activate a virtual environment (optional but recommended)
-python3 -m venv venv
-source venv/bin/activate  #on windows use venv\Scripts\activate
+#macos/linux
+python3.11 -m venv venv
+source venv/bin/activate
+
+#windows
+py -3.11 -m venv venv
+venv\Scripts\activate
 
 #install the required dependencies
 pip install -r requirements.txt
@@ -242,6 +247,8 @@ python3 -m app
 To evaluate a brand new gymnastics routine, the raw video must first be processed by the *Deep Learning* extraction layer to generate the kinematic coordinate JSON file.
 
 Because foundation models like Meta's Sapiens-2B require specific system architectures and heavy dependencies, we have isolated this process using Docker to prevent local dependency conflicts.
+
+> **<samp>STEP-BY-STEP EXTRACTION GUIDE:</samp>** Please refer to the **[Human Pose Estimation (HPE) Module Documentation](backend/hpe/pose/README.md)** for detailed instructions on downloading the Sapiens model weights.
 
 #### <samp> 1  *NAVIGATE TO THE HPE MODULE*</samp>
 ```

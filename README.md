@@ -248,7 +248,7 @@ To evaluate a brand new gymnastics routine, the raw video must first be processe
 
 Because foundation models like Meta's Sapiens-2B require specific system architectures and heavy dependencies, we have isolated this process using Docker to prevent local dependency conflicts.
 
-> **<samp>STEP-BY-STEP EXTRACTION GUIDE:</samp>** Please refer to the **[Human Pose Estimation (HPE) Module Documentation](backend/hpe/pose/README.md)** for detailed instructions on downloading the Sapiens model weights.
+> **<samp>STEP-BY-STEP EXTRACTION GUIDE:</samp>** Please refer to the **[Human Pose Estimation (HPE) Module Documentation](backend/hpe/pose/checkpoints/README.md)** for detailed instructions on downloading the Sapiens model weights.
 
 #### <samp> 1  *NAVIGATE TO THE HPE MODULE*</samp>
 ```
